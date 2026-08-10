@@ -10,9 +10,17 @@ class ProductOption {
   });
 
   factory ProductOption.fromMap(Map<String, dynamic> map) {
+    // Gestion du type au cas où l'utilisateur a saisi une String au lieu d'un Number dans Firestore
+    double parsedPrix = 0.0;
+    if (map['prix'] is num) {
+      parsedPrix = (map['prix'] as num).toDouble();
+    } else if (map['prix'] is String) {
+      parsedPrix = double.tryParse(map['prix'] as String) ?? 0.0;
+    }
+
     return ProductOption(
       label: map['label'] as String? ?? '',
-      prix: (map['prix'] as num?)?.toDouble() ?? 0.0,
+      prix: parsedPrix,
     );
   }
 
@@ -54,22 +62,46 @@ class Product {
   });
 
   factory Product.fromMap(Map<String, dynamic> map, String id) {
+    // Parsing robuste pour noteMoyenne
+    double parsedNote = 0.0;
+    if (map['note_moyenne'] is num) {
+      parsedNote = (map['note_moyenne'] as num).toDouble();
+    } else if (map['note_moyenne'] is String) {
+      parsedNote = double.tryParse(map['note_moyenne'] as String) ?? 0.0;
+    }
+
+    // Parsing robuste pour nombreAvis
+    int parsedAvis = 0;
+    if (map['nombre_avis'] is num) {
+      parsedAvis = (map['nombre_avis'] as num).toInt();
+    } else if (map['nombre_avis'] is String) {
+      parsedAvis = int.tryParse(map['nombre_avis'] as String) ?? 0;
+    }
+
+    // Parsing de disponible (au cas où entré comme string)
+    bool parsedDisponible = true;
+    if (map['disponible'] is bool) {
+      parsedDisponible = map['disponible'] as bool;
+    } else if (map['disponible'] is String) {
+      parsedDisponible = (map['disponible'] as String).toLowerCase() == 'true';
+    }
+
     return Product(
       id: id,
       nom: map['nom'] as String? ?? '',
       description: map['description'] as String? ?? '',
       categorieId: map['categorie_id'] as String? ?? '',
       imageUrl: map['image_url'] as String? ?? '',
-      disponible: map['disponible'] as bool? ?? true,
+      disponible: parsedDisponible,
       ingredients: map['ingredients'] as String? ?? '',
       allergenes: map['allergenes'] as String? ?? '',
-      noteMoyenne: (map['note_moyenne'] as num?)?.toDouble() ?? 0.0,
-      nombreAvis: (map['nombre_avis'] as num?)?.toInt() ?? 0,
+      noteMoyenne: parsedNote,
+      nombreAvis: parsedAvis,
       options: (map['options'] as List<dynamic>?)
               ?.map((item) => ProductOption.fromMap(item as Map<String, dynamic>))
               .toList() ??
           [],
-      createdAt: map['created_at'] != null
+      createdAt: map['created_at'] != null && map['created_at'] is Timestamp
           ? (map['created_at'] as Timestamp).toDate()
           : null,
     );

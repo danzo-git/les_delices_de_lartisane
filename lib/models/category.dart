@@ -12,10 +12,17 @@ class Category {
   });
 
   factory Category.fromMap(Map<String, dynamic> map, String id) {
+    int parsedOrdre = 0;
+    if (map['ordre'] is num) {
+      parsedOrdre = (map['ordre'] as num).toInt();
+    } else if (map['ordre'] is String) {
+      parsedOrdre = int.tryParse(map['ordre'] as String) ?? 0;
+    }
+
     return Category(
       id: id,
       nom: map['nom'] as String? ?? '',
-      ordre: (map['ordre'] as num?)?.toInt() ?? 0,
+      ordre: parsedOrdre,
       icone: map['icone'] as String?,
     );
   }
