@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "820391007726",
+    "project_id": "les-delices-artisane",
+    "storage_bucket": "les-delices-artisane.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:820391007726:android:9e577dca708ba18051aaff",
+        "android_client_info": {
+          "package_name": "com.example.les_delices_artisane"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "820391007726-40st5bvc288vtsb08tkm2fin2ph1vrge.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDMtsWU9ofjXbgoUOJii4KbPGseBQuvEM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "820391007726-40st5bvc288vtsb08tkm2fin2ph1vrge.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "820391007726-f6t80hr218lc1t8vkeg7slieek8kooec.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.lesDelicesArtisane"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:820391007726:android:97e520a8bc2e3e0651aaff",
+        "android_client_info": {
+          "package_name": "com.lesdelicesartisane.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "820391007726-40st5bvc288vtsb08tkm2fin2ph1vrge.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDMtsWU9ofjXbgoUOJii4KbPGseBQuvEM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "820391007726-40st5bvc288vtsb08tkm2fin2ph1vrge.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "820391007726-f6t80hr218lc1t8vkeg7slieek8kooec.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.lesDelicesArtisane"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
