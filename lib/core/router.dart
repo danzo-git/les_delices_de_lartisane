@@ -7,6 +7,12 @@ import '../features/main/screens/main_screen.dart';
 import '../features/catalogue/screens/home_screen.dart';
 import '../features/catalogue/screens/catalogue_screen.dart';
 import '../features/catalogue/screens/product_detail_screen.dart';
+import '../features/profil/screens/profile_screen.dart';
+import '../features/panier/screens/panier_screen.dart';
+import '../features/panier/screens/paiement_screen.dart';
+import '../features/commande/screens/order_history_screen.dart';
+import '../features/commande/screens/order_tracking_screen.dart';
+import '../core/widgets/coming_soon_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorAccueilKey = GlobalKey<NavigatorState>(debugLabel: 'accueil');
@@ -58,9 +64,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/panier',
-              builder: (context, state) => const Scaffold(
-                body: Center(child: Text('Panier (À venir)')),
-              ),
+              builder: (context, state) => const PanierScreen(),
             ),
           ],
         ),
@@ -69,9 +73,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/compte',
-              builder: (context, state) => const Scaffold(
-                body: Center(child: Text('Compte (À venir)')),
-              ),
+              builder: (context, state) => const ProfileScreen(),
             ),
           ],
         ),
@@ -84,6 +86,29 @@ final appRouter = GoRouter(
         final productId = state.pathParameters['id']!;
         return ProductDetailScreen(productId: productId);
       },
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/paiement',
+      builder: (context, state) => const PaiementScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/orders',
+      builder: (context, state) => const OrderHistoryScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/order/:id',
+      builder: (context, state) {
+        final orderId = state.pathParameters['id']!;
+        return OrderTrackingScreen(orderId: orderId);
+      },
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/coming-soon',
+      builder: (context, state) => const ComingSoonScreen(),
     ),
   ],
 );

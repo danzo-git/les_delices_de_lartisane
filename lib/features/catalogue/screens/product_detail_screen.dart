@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../models/product.dart';
+import '../../../models/cart_item.dart';
 import '../../../theme/app_colors.dart';
 import '../providers/catalogue_provider.dart';
+import '../../panier/providers/panier_provider.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -312,15 +314,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         onPressed: _selectedOption == null
                             ? null
                             : () {
-                                // Préparation de l'objet OrderItem (sans logique réelle pour l'instant)
-                                final itemToAdd = {
-                                  'product_id': product.id,
-                                  'nom': product.nom,
-                                  'option_label': _selectedOption!.label,
-                                  'prix_unitaire': _selectedOption!.prix,
-                                  'quantite': _quantity,
-                                  'sous_total': totalPrice,
-                                };
+                                // Ajout au panier via le provider
+                                final itemToAdd = CartItem(
+                                  productId: product.id,
+                                  nom: product.nom,
+                                  optionLabel: _selectedOption!.label,
+                                  prixUnitaire: _selectedOption!.prix,
+                                  quantite: _quantity,
+                                  sousTotal: totalPrice,
+                                  imageUrl: product.imageUrl,
+                                );
+                                
+                                ref.read(panierProvider.notifier).ajouterArticle(itemToAdd);
 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
