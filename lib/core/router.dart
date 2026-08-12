@@ -9,7 +9,6 @@ import '../features/catalogue/screens/catalogue_screen.dart';
 import '../features/catalogue/screens/product_detail_screen.dart';
 import '../features/profil/screens/profile_screen.dart';
 import '../features/panier/screens/panier_screen.dart';
-import '../features/panier/screens/paiement_screen.dart';
 import '../features/commande/screens/order_history_screen.dart';
 import '../features/commande/screens/order_tracking_screen.dart';
 import '../core/widgets/coming_soon_screen.dart';
@@ -86,11 +85,6 @@ final appRouter = GoRouter(
         final productId = state.pathParameters['id']!;
         return ProductDetailScreen(productId: productId);
       },
-    ),
-    GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
-      path: '/paiement',
-      builder: (context, state) => const PaiementScreen(),
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,

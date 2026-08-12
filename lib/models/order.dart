@@ -74,11 +74,14 @@ class OrderModel {
   final double sousTotal;
   final String modeLivraison; // "retrait" | "livraison"
   final String? commune;
+  final String? adresseLivraison; // NEW
   final double fraisLivraison;
   final double total;
   final String modePaiement; // "wave" | "orange_money" | "mtn_momo"
-  final String statutPaiement; // "en_attente" | "confirme" | "echoue"
-  final String statutCommande; // "recue" | "en_preparation" | "prete" | "livree"
+  final String statutPaiement; // "non_requis" | "en_attente" | "confirme" | "echoue"
+  final String statutCommande; // "en_attente_validation" | "acceptee" | "refusee" | "recue" | "en_preparation" | "prete" | "livree"
+  final String? motifRefus; // NEW
+  final DateTime? dateSouhaitee; // NEW
   final List<OrderStatusHistory> historiqueStatuts;
   final DateTime? createdAt;
 
@@ -92,11 +95,14 @@ class OrderModel {
     required this.sousTotal,
     required this.modeLivraison,
     this.commune,
+    this.adresseLivraison,
     required this.fraisLivraison,
     required this.total,
     required this.modePaiement,
     required this.statutPaiement,
     required this.statutCommande,
+    this.motifRefus,
+    this.dateSouhaitee,
     required this.historiqueStatuts,
     this.createdAt,
   });
@@ -115,11 +121,16 @@ class OrderModel {
       sousTotal: (map['sous_total'] as num?)?.toDouble() ?? 0.0,
       modeLivraison: map['mode_livraison'] as String? ?? 'retrait',
       commune: map['commune'] as String?,
+      adresseLivraison: map['adresse_livraison'] as String?,
       fraisLivraison: (map['frais_livraison'] as num?)?.toDouble() ?? 0.0,
       total: (map['total'] as num?)?.toDouble() ?? 0.0,
       modePaiement: map['mode_paiement'] as String? ?? 'wave',
-      statutPaiement: map['statut_paiement'] as String? ?? 'en_attente',
-      statutCommande: map['statut_commande'] as String? ?? 'recue',
+      statutPaiement: map['statut_paiement'] as String? ?? 'non_requis',
+      statutCommande: map['statut_commande'] as String? ?? 'en_attente_validation',
+      motifRefus: map['motif_refus'] as String?,
+      dateSouhaitee: map['date_souhaitee'] != null
+          ? (map['date_souhaitee'] as Timestamp).toDate()
+          : null,
       historiqueStatuts: (map['historique_statuts'] as List<dynamic>?)
               ?.map((item) => OrderStatusHistory.fromMap(item as Map<String, dynamic>))
               .toList() ??
@@ -140,11 +151,14 @@ class OrderModel {
       'sous_total': sousTotal,
       'mode_livraison': modeLivraison,
       if (commune != null) 'commune': commune,
+      if (adresseLivraison != null) 'adresse_livraison': adresseLivraison,
       'frais_livraison': fraisLivraison,
       'total': total,
       'mode_paiement': modePaiement,
       'statut_paiement': statutPaiement,
       'statut_commande': statutCommande,
+      if (motifRefus != null) 'motif_refus': motifRefus,
+      if (dateSouhaitee != null) 'date_souhaitee': Timestamp.fromDate(dateSouhaitee!),
       'historique_statuts': historiqueStatuts.map((h) => h.toMap()).toList(),
       'created_at': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
     };

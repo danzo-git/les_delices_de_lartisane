@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'core/router.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
@@ -11,6 +12,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialiser les données de locale pour DateFormat (package intl)
+  await initializeDateFormatting('fr_FR', null);
 
   runApp(
     const ProviderScope(
