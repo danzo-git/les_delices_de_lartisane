@@ -1,0 +1,78 @@
+[2026-08-19T00:52:07.120Z] ----------------------------------------------------------------------
+[2026-08-19T00:52:07.141Z] Command:       C:\nvm4w\nodejs\node.exe C:\Users\kouam\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions:geniusPayWebhook --debug
+[2026-08-19T00:52:07.141Z] CLI Version:   15.26.0
+[2026-08-19T00:52:07.142Z] Platform:      win32
+[2026-08-19T00:52:07.142Z] Node Version:  v22.15.0
+[2026-08-19T00:52:07.142Z] Detected Agent: antigravity
+[2026-08-19T00:52:07.143Z] Time:          Wed Aug 19 2026 02:52:07 GMT+0200 (heure d’été d’Europe centrale)
+[2026-08-19T00:52:07.143Z] ----------------------------------------------------------------------
+
+[2026-08-19T00:52:10.148Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[2026-08-19T00:52:10.155Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[2026-08-19T00:52:10.156Z] > authorizing via signed-in user (danzo27011968@gmail.com)
+[2026-08-19T00:52:10.156Z] [iam] checking project les-delices-artisane for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[2026-08-19T00:52:10.176Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:10.176Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:10.178Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/les-delices-artisane:testIamPermissions [none]
+[2026-08-19T00:52:10.178Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/les-delices-artisane:testIamPermissions  x-goog-user-project=les-delices-artisane
+[2026-08-19T00:52:10.178Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/les-delices-artisane:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[2026-08-19T00:52:10.916Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/les-delices-artisane:testIamPermissions 200
+[2026-08-19T00:52:10.916Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/les-delices-artisane:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[2026-08-19T00:52:10.916Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:10.916Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:10.916Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/les-delices-artisane/serviceAccounts/les-delices-artisane@appspot.gserviceaccount.com:testIamPermissions [none]
+[2026-08-19T00:52:10.916Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/les-delices-artisane/serviceAccounts/les-delices-artisane@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[2026-08-19T00:52:11.546Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/les-delices-artisane/serviceAccounts/les-delices-artisane@appspot.gserviceaccount.com:testIamPermissions 200
+[2026-08-19T00:52:11.546Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/les-delices-artisane/serviceAccounts/les-delices-artisane@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+
+=== Deploying to 'les-delices-artisane'...
+
+i  deploying functions 
+[2026-08-19T00:52:11.548Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:11.548Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:11.549Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/les-delices-artisane [none]
+[2026-08-19T00:52:11.737Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/les-delices-artisane 200
+[2026-08-19T00:52:11.738Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/les-delices-artisane {"projectNumber":"820391007726","projectId":"les-delices-artisane","lifecycleState":"ACTIVE","name":"les-delices-artisane","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-08-05T05:42:43.211Z"}
+i  functions: preparing codebase default for deployment 
+i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[2026-08-19T00:52:11.742Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:11.742Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:11.742Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/les-delices-artisane/adminSdkConfig [none]
+[2026-08-19T00:52:12.355Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/les-delices-artisane/adminSdkConfig 200
+[2026-08-19T00:52:12.355Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/les-delices-artisane/adminSdkConfig {"projectId":"les-delices-artisane","storageBucket":"les-delices-artisane.firebasestorage.app"}
+[2026-08-19T00:52:12.356Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:12.356Z] Checked if tokens are valid: true, expires at: 1787102990860
+[2026-08-19T00:52:12.357Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/les-delices-artisane/configs [none]
+[2026-08-19T00:52:12.607Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/les-delices-artisane/configs 200
+[2026-08-19T00:52:12.608Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/les-delices-artisane/configs {}
+[2026-08-19T00:52:12.610Z] Validating nodejs source
+[2026-08-19T00:52:14.506Z] > [functions] package.json contents: {
+  "name": "functions",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.19.0",
+    "firebase-admin": "^14.2.0",
+    "firebase-functions": "^7.3.2"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
+[2026-08-19T00:52:14.506Z] Building nodejs source
+i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[2026-08-19T00:52:14.507Z] Could not find functions.yaml. Must use http discovery
+[2026-08-19T00:52:14.518Z] Found firebase-functions binary at 'C:\laragon\www\les_delices_artisane\functions\node_modules\.bin\firebase-functions'
+Serving at port 8314
+
+
+Error: User code failed to load. Cannot determine backend specification. Timeout after 10000. See https://firebase.google.com/docs/functions/tips#avoid_deployment_timeouts_during_initialization'

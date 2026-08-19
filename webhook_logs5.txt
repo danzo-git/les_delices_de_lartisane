@@ -1,0 +1,75 @@
+2026-08-19T00:54:33.761903Z I geniuspaywebhook: Default STARTUP TCP probe succeeded after 1 attempt for container "worker" on port 8080.
+2026-08-19T00:54:34.650061Z I geniuspaywebhook: Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+2026-08-19T00:54:36.905500Z I geniuspaywebhook: Default STARTUP TCP probe succeeded after 1 attempt for container "worker" on port 8080.
+2026-08-19T00:54:42.105704280Z N geniusPayWebhook: {"@type":"type.googleapis.com/google.cloud.audit.AuditLog","status":{},"authenticationInfo":{"principalEmail":"danzo27011968@gmail.com","principalSubject":"user:danzo27011968@gmail.com","oauthInfo":{"oauthClientId":"563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com"}},"requestMetadata":{"requestAttributes":{},"destinationAttributes":{}},"serviceName":"cloudfunctions.googleapis.com","methodName":"google.cloud.functions.v2.FunctionService.UpdateFunction","resourceName":"projects/les-delices-artisane/locations/us-central1/functions/geniusPayWebhook","response":{"serviceConfig":{"serviceAccountEmail":"820391007726-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"timeoutSeconds":60,"availableCpu":"1","revision":"geniuspaywebhook-00009-qof","maxInstanceCount":20,"maxInstanceRequestConcurrency":80,"ingressSettings":"ALLOW_ALL","uri":"https://geniuspaywebhook-5atgisb4eq-uc.a.run.app","secretEnvironmentVariables":[{"version":"1","projectId":"les-delices-artisane","key":"GENIUS_PAY_WEBHOOK_SECRET","secret":"GENIUS_PAY_WEBHOOK_SECRET"}]},"environment":"GEN_2","labels":{"firebase-functions-hash":"44bb086447b0208b90b3ccf09a3b88116dc86557","deployment-tool":"cli-firebase"},"updateTime":"2026-08-19T00:53:26.146946735Z","createTime":"2026-08-11T23:44:05.161518271Z","satisfiesPzi":true,"name":"projects/les-delices-artisane/locations/us-central1/functions/geniusPayWebhook","state":"ACTIVE","@type":"type.googleapis.com/google.cloud.functions.v2.Function","url":"https://us-central1-les-delices-artisane.cloudfunctions.net/geniusPayWebhook","buildConfig":{"automaticUpdatePolicy":{},"dockerRepository":"projects/les-delices-artisane/locations/us-central1/repositories/gcf-artifacts","dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/les-delices-artisane/serviceAccounts/820391007726-compute@developer.gserviceaccount.com","source":{},"entryPoint":"geniusPayWebhook","runtime":"nodejs24"}},"resourceLocation":{"currentLocations":["us-central1"]}}
+2026-08-19T00:59:04.304365Z W geniuspaywebhook: 
+2026-08-19T00:59:04.342927Z ? geniuspaywebhook: RAW_BODY_EXACT: {"id":"69ef95e8-1f59-41d3-8e84-972ecb8701d9","event":"payment.success","timestamp":1787101144,"data":{"id":16981,"reference":"SANDBOX_X1SP3EKXD25EUPNA","external_reference":null,"amount":"5000.00","currency":"XOF","status":"completed","gateway":"wave","scenario":"success","environment":"sandbox","customer":{"name":"Kouame Denzel","email":null,"phone":"0745401270"},"metadata":{"order_id":"MPZOgPDrlPJcdo16HUJJ"},"simulated_at":"2026-08-19T00:59:03+00:00","completed_at":"2026-08-19T00:59:03+00:00","created_at":"2026-08-19T00:58:55+00:00","updated_at":"2026-08-19T00:59:03+00:00"}}
+
+2026-08-19T00:59:04.343343Z ? geniuspaywebhook: SIGNATURE_RECUE: 80dc7f8309be7a1a09d84092053f73361fdadbf26535e922d285ec8621c0a80f
+
+2026-08-19T00:59:04.343453Z ? geniuspaywebhook: HEADERS: {"host":"geniuspaywebhook-5atgisb4eq-uc.a.run.app","content-type":"application/json","x-webhook-signature":"80dc7f8309be7a1a09d84092053f73361fdadbf26535e922d285ec8621c0a80f","x-webhook-timestamp":"1787101144","x-webhook-event":"payment.success","user-agent":"GeniusPay-Webhook/1.0","content-length":"583","x-cloud-trace-context":"9e03c3e91d926e2d048dbe32350a648a/4081388354129695331;o=1","x-forwarded-proto":"https","traceparent":"00-9e03c3e91d926e2d048dbe32350a648a-38a401157e511263-01","x-forwarded-for":"2a02:4780:28:f35a::1","forwarded":"for=\"[2a02:4780:28:f35a::1]\";proto=https"}
+
+2026-08-19T00:59:04.344073Z ? geniuspaywebhook: Secret Webhook chargé : true longueur : 55
+
+2026-08-19T00:59:04.344197Z ? geniuspaywebhook: PAYLOAD BRUT GENIUSPAY: {"id":"69ef95e8-1f59-41d3-8e84-972ecb8701d9","event":"payment.success","timestamp":1787101144,"data":{"id":16981,"reference":"SANDBOX_X1SP3EKXD25EUPNA","external_reference":null,"amount":"5000.00","currency":"XOF","status":"completed","gateway":"wave","scenario":"success","environment":"sandbox","customer":{"name":"Kouame Denzel","email":null,"phone":"0745401270"},"metadata":{"order_id":"MPZOgPDrlPJcdo16HUJJ"},"simulated_at":"2026-08-19T00:59:03+00:00","completed_at":"2026-08-19T00:59:03+00:00","created_at":"2026-08-19T00:58:55+00:00","updated_at":"2026-08-19T00:59:03+00:00"}}
+
+2026-08-19T00:59:04.345945Z ? geniuspaywebhook: Calcul Signature: {
+  attendue: '848403134b0b1bceb974c46294120b0feabd04d1144880aa4ce3ad81012091db',
+  recue: '80dc7f8309be7a1a09d84092053f73361fdadbf26535e922d285ec8621c0a80f',
+  timestamp: '1787101144',
+  rawStart: '{"id":"69ef95e8-1f59-41d3-8e84-972ecb8701d9","even'
+}
+
+2026-08-19T00:59:04.346209Z ? geniuspaywebhook: Signature invalide {
+  signature: '80dc7f8309be7a1a09d84092053f73361fdadbf26535e922d285ec8621c0a80f',
+  expectedSignature: '848403134b0b1bceb974c46294120b0feabd04d1144880aa4ce3ad81012091db'
+}
+
+2026-08-19T00:59:36.182634Z W geniuspaywebhook: 
+2026-08-19T00:59:36.187786Z ? geniuspaywebhook: RAW_BODY_EXACT: {"id":"81f65123-5e35-4962-aad1-6385a9ad02a4","event":"payment.success","timestamp":1787101176,"data":{"id":16982,"reference":"SANDBOX_TPPPKHP7Q1KGTZEQ","external_reference":null,"amount":"5000.00","currency":"XOF","status":"completed","gateway":"wave","scenario":"success","environment":"sandbox","customer":{"name":"Kouame Denzel","email":null,"phone":"0745401270"},"metadata":{"order_id":"MPZOgPDrlPJcdo16HUJJ"},"simulated_at":"2026-08-19T00:59:35+00:00","completed_at":"2026-08-19T00:59:35+00:00","created_at":"2026-08-19T00:59:28+00:00","updated_at":"2026-08-19T00:59:35+00:00"}}
+
+2026-08-19T00:59:36.187914Z ? geniuspaywebhook: SIGNATURE_RECUE: 657313c67807eea4bdbde3435ce481d9714a3aaae4dbbf66f6af75e987bea648
+
+2026-08-19T00:59:36.188095Z ? geniuspaywebhook: HEADERS: {"host":"geniuspaywebhook-5atgisb4eq-uc.a.run.app","content-type":"application/json","x-webhook-signature":"657313c67807eea4bdbde3435ce481d9714a3aaae4dbbf66f6af75e987bea648","x-webhook-timestamp":"1787101176","x-webhook-event":"payment.success","user-agent":"GeniusPay-Webhook/1.0","content-length":"583","x-cloud-trace-context":"48d3ab56d9f34232788bdcdfad4266ec/3801101840569355048;o=1","x-forwarded-proto":"https","traceparent":"00-48d3ab56d9f34232788bdcdfad4266ec-34c039fc22384b28-01","x-forwarded-for":"2a02:4780:28:f35a::1","forwarded":"for=\"[2a02:4780:28:f35a::1]\";proto=https"}
+
+2026-08-19T00:59:36.188231Z ? geniuspaywebhook: Secret Webhook chargé : true longueur : 55
+
+2026-08-19T00:59:36.188322Z ? geniuspaywebhook: PAYLOAD BRUT GENIUSPAY: {"id":"81f65123-5e35-4962-aad1-6385a9ad02a4","event":"payment.success","timestamp":1787101176,"data":{"id":16982,"reference":"SANDBOX_TPPPKHP7Q1KGTZEQ","external_reference":null,"amount":"5000.00","currency":"XOF","status":"completed","gateway":"wave","scenario":"success","environment":"sandbox","customer":{"name":"Kouame Denzel","email":null,"phone":"0745401270"},"metadata":{"order_id":"MPZOgPDrlPJcdo16HUJJ"},"simulated_at":"2026-08-19T00:59:35+00:00","completed_at":"2026-08-19T00:59:35+00:00","created_at":"2026-08-19T00:59:28+00:00","updated_at":"2026-08-19T00:59:35+00:00"}}
+
+2026-08-19T00:59:36.188574Z ? geniuspaywebhook: Calcul Signature: {
+  attendue: '4fb2af365c66574b6e886b23f93a985eff5fba6b467a8eeb1a4189d5de054770',
+  recue: '657313c67807eea4bdbde3435ce481d9714a3aaae4dbbf66f6af75e987bea648',
+  timestamp: '1787101176',
+  rawStart: '{"id":"81f65123-5e35-4962-aad1-6385a9ad02a4","even'
+}
+
+2026-08-19T00:59:36.188767Z ? geniuspaywebhook: Signature invalide {
+  signature: '657313c67807eea4bdbde3435ce481d9714a3aaae4dbbf66f6af75e987bea648',
+  expectedSignature: '4fb2af365c66574b6e886b23f93a985eff5fba6b467a8eeb1a4189d5de054770'
+}
+
+2026-08-19T01:00:18.945093Z W geniuspaywebhook: 
+2026-08-19T01:00:18.955693Z ? geniuspaywebhook: RAW_BODY_EXACT: {"id":"16f91c10-24ce-44f0-8d04-f8dfc3ae9c04","event":"webhook.test","timestamp":1787101218,"created_at":"2026-08-19T01:00:18.609847Z","data":{"object":"webhook.test","message":"This is a test webhook from GeniusPay","webhook_id":4104,"environment":"sandbox"},"environment":"sandbox","api_version":"2024-01-01"}
+
+2026-08-19T01:00:18.955756Z ? geniuspaywebhook: SIGNATURE_RECUE: ee211e3d0c4fe77bb36d1ba9597c66dcf78619c7f77830531affa7cf4315f20d
+
+2026-08-19T01:00:18.955850Z ? geniuspaywebhook: HEADERS: {"host":"geniuspaywebhook-5atgisb4eq-uc.a.run.app","content-type":"application/json","x-webhook-signature":"ee211e3d0c4fe77bb36d1ba9597c66dcf78619c7f77830531affa7cf4315f20d","x-webhook-timestamp":"1787101218","x-webhook-event":"webhook.test","user-agent":"GeniusPay-Webhook/1.0","content-length":"310","x-cloud-trace-context":"f79da5a6925d6110f81850bbb1899468/5470368152577385514;o=1","x-forwarded-proto":"https","traceparent":"00-f79da5a6925d6110f81850bbb1899468-4beaa6d9fcfc242a-01","x-forwarded-for":"2a02:4780:28:f35a::1","forwarded":"for=\"[2a02:4780:28:f35a::1]\";proto=https"}
+
+2026-08-19T01:00:18.955985Z ? geniuspaywebhook: Secret Webhook chargé : true longueur : 55
+
+2026-08-19T01:00:18.956039Z ? geniuspaywebhook: PAYLOAD BRUT GENIUSPAY: {"id":"16f91c10-24ce-44f0-8d04-f8dfc3ae9c04","event":"webhook.test","timestamp":1787101218,"created_at":"2026-08-19T01:00:18.609847Z","data":{"object":"webhook.test","message":"This is a test webhook from GeniusPay","webhook_id":4104,"environment":"sandbox"},"environment":"sandbox","api_version":"2024-01-01"}
+
+2026-08-19T01:00:18.956236Z ? geniuspaywebhook: Calcul Signature: {
+  attendue: '2e8e98331603efad0aa7cc3c815ca1e4844fa76f814be915366f9e672b0293bc',
+  recue: 'ee211e3d0c4fe77bb36d1ba9597c66dcf78619c7f77830531affa7cf4315f20d',
+  timestamp: '1787101218',
+  rawStart: '{"id":"16f91c10-24ce-44f0-8d04-f8dfc3ae9c04","even'
+}
+
+2026-08-19T01:00:18.956418Z ? geniuspaywebhook: Signature invalide {
+  signature: 'ee211e3d0c4fe77bb36d1ba9597c66dcf78619c7f77830531affa7cf4315f20d',
+  expectedSignature: '2e8e98331603efad0aa7cc3c815ca1e4844fa76f814be915366f9e672b0293bc'
+}
+
+2026-08-19T01:01:57.262622Z W geniuspaywebhook: 
+2026-08-19T01:01:57.535703Z W geniuspaywebhook: 

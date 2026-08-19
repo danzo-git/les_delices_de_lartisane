@@ -10,6 +10,7 @@ initializeApp();
 
 const geniusPayPublicKey = defineSecret('GENIUS_PAY_PUBLIC_KEY');
 const geniusPaySecretKey = defineSecret('GENIUS_PAY_SECRET_KEY');
+const geniusPayWebhookSecret = defineSecret('GENIUS_PAY_WEBHOOK_SECRET');
 
 const GENIUS_PAY_API_URL = 'https://geniuspay.ci/api/v1/merchant/payments';
 
@@ -96,42 +97,72 @@ exports.createPayment = onCall(
 );
 
 exports.geniusPayWebhook = onRequest(
-    { secrets: [geniusPaySecretKey] },
+    { secrets: [geniusPayWebhookSecret] },
     async (req, res) => {
         const db = getFirestore();
 
         try {
             const signature = req.headers['x-webhook-signature'];
-            const timestamp = req.headers['x-webhook-timestamp'];
-            const payload = req.rawBody ? req.rawBody.toString() : JSON.stringify(req.body);
 
-            // Validation du timestamp (max 5 minutes d'écart)
-            if (timestamp) {
-                const timeDiff = Math.abs(Date.now() / 1000 - parseInt(timestamp));
-                if (timeDiff > 300) {
-                    return res.status(400).send('Timestamp invalide ou expiré');
-                }
+            if (!req.rawBody) {
+                return res.status(400).send('rawBody manquant');
+            }
+            const payloadString = req.rawBody.toString('utf8');
+
+            // TEMPORAIRE : logger rawBody exact + signature reçue pour debug
+            console.log("RAW_BODY_EXACT:", payloadString);
+            console.log("SIGNATURE_RECUE:", req.headers['x-webhook-signature']);
+            console.log("HEADERS:", JSON.stringify(req.headers));
+
+            // Log temporaire pour vérifier l'état du secret webhook
+            const secretValue = geniusPayWebhookSecret.value();
+            console.log("Secret Webhook chargé :", !!secretValue, "longueur :", secretValue?.length);
+
+            // Le timestamp vient du HEADER X-Webhook-Timestamp (confirmé doc officielle)
+            const timestamp = req.headers['x-webhook-timestamp'];
+
+            // Log brut du payload pour inspection (Temporaire)
+            console.log("PAYLOAD BRUT GENIUSPAY:", JSON.stringify(req.body));
+
+            if (!timestamp) {
+                return res.status(400).send('timestamp manquant dans le payload');
             }
 
             // Validation de la signature HMAC
-            if (signature) {
-                const stringToSign = `${timestamp}.${payload}`;
-                const expectedSignature = crypto
-                    .createHmac('sha256', geniusPaySecretKey.value())
-                    .update(stringToSign)
-                    .digest('hex');
-
-                if (signature !== expectedSignature) {
-                    console.warn('Signature invalide', { signature, expectedSignature });
-                    return res.status(403).send('Signature invalide');
-                }
+            if (!signature) {
+                return res.status(401).send('Signature manquante');
             }
 
-            const data = req.body;
-            const orderId = data.metadata?.order_id;
-            const eventType = data.event;
+            const stringToSign = `${timestamp}.${payloadString}`;
+            const expectedSignature = crypto
+                .createHmac('sha256', secretValue)
+                .update(stringToSign)
+                .digest('hex');
+
+            // Log détaillé pour la signature
+            console.log("Calcul Signature:", {
+                attendue: expectedSignature,
+                recue: signature,
+                timestamp: timestamp,
+                rawStart: payloadString.substring(0, 50)
+            });
+
+            const sigBuffer = Buffer.from(signature, 'hex');
+            const expBuffer = Buffer.from(expectedSignature, 'hex');
+
+            if (sigBuffer.length !== expBuffer.length || !crypto.timingSafeEqual(sigBuffer, expBuffer)) {
+                console.warn('Signature invalide', { signature, expectedSignature });
+                return res.status(401).send('Signature invalide');
+            }
+
+            const body = req.body;
+            // GeniusPay enveloppe les données dans body.data
+            const paymentData = body.data;
+            const orderId = paymentData?.metadata?.order_id;
+            const eventType = body.event;
 
             if (!orderId) {
+                console.error('order_id manquant. Structure body:', JSON.stringify(body));
                 return res.status(400).send('order_id manquant');
             }
 
@@ -163,6 +194,7 @@ exports.geniusPayWebhook = onRequest(
                 historique_statuts: FieldValue.arrayUnion(historyEntry)
             });
 
+            console.log(`Commande ${orderId} mise à jour: paiement=${newPaymentStatus}, commande=${newOrderStatus}`);
             res.status(200).send('Webhook traité avec succès');
         } catch (error) {
             console.error('Erreur webhook:', error.message);
