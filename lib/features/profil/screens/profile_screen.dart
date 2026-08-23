@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,7 +38,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             _buildProfileHeader(userProfile.nom, userProfile.telephone, userProfile.email),
             const SizedBox(height: 32),
-            _buildMenuItems(context, ref, userProfile.adresses),
+            _buildMenuItems(context, ref, userProfile.adresses, userProfile.role),
             const SizedBox(height: 24),
             _buildLogoutButton(context, ref),
             const SizedBox(height: 40),
@@ -78,7 +78,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMenuItems(BuildContext context, WidgetRef ref, List adresses) {
+  Widget _buildMenuItems(BuildContext context, WidgetRef ref, List adresses, String role) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Material(
@@ -87,6 +87,16 @@ class ProfileScreen extends ConsumerWidget {
         clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
+            // Accès espace admin — visible uniquement pour role == "admin"
+            if (role == 'admin') ...[
+              _MenuItem(
+                icon: Icons.admin_panel_settings_rounded,
+                title: 'Espace Admin',
+                iconColor: const Color(0xFFE96A92),
+                onTap: () => context.push('/admin'),
+              ),
+              const Divider(height: 1, indent: 56),
+            ],
             _MenuItem(
               icon: Icons.shopping_bag_outlined,
               title: 'Mes commandes',
@@ -176,23 +186,25 @@ class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
+  final Color? iconColor;
 
   const _MenuItem({
     required this.icon,
     required this.title,
     required this.onTap,
+    this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF2C2C2C)),
+      leading: Icon(icon, color: iconColor ?? const Color(0xFF2C2C2C)),
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF2C2C2C),
+          color: iconColor ?? const Color(0xFF2C2C2C),
         ),
       ),
       trailing: const Icon(Icons.chevron_right, color: Color(0xFF8E8E93)),

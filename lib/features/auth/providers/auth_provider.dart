@@ -49,28 +49,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void _init() {
-    _auth.authStateChanges().listen((User? user) async {
+    _auth.authStateChanges().listen((User? user) {
       if (user != null) {
-        await _fetchUserProfile(user.uid);
+        _listenToUserProfile(user.uid);
       } else {
         state = const AuthState();
       }
     });
   }
 
-  /// Récupération du profil utilisateur Firestore
-  Future<void> _fetchUserProfile(String uid) async {
-    try {
-      final doc = await _firestore.collection('users').doc(uid).get();
+  /// Écoute en temps réel le document users/{uid} — prend en compte
+  /// les changements de rôle sans déconnexion/reconnexion.
+  void _listenToUserProfile(String uid) {
+    _firestore.collection('users').doc(uid).snapshots().listen((doc) {
       if (doc.exists && doc.data() != null) {
         final profile = UserProfile.fromMap(doc.data()!, uid);
         state = state.copyWith(user: _auth.currentUser, profile: profile);
       } else {
         state = state.copyWith(user: _auth.currentUser);
       }
-    } catch (e) {
+    }, onError: (_) {
       state = state.copyWith(user: _auth.currentUser);
-    }
+    });
   }
 
   /// Efface les erreurs en cours
@@ -108,7 +108,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
 
       if (credential.user != null) {
-        await _fetchUserProfile(credential.user!.uid);
+        // Le profil sera chargé automatiquement via _listenToUserProfile
+        // déclenché par authStateChanges(). Pas besoin d'appel explicite.
         state = state.copyWith(isLoading: false);
         return true;
       }
