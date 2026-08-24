@@ -17,6 +17,7 @@ import '../features/admin/screens/admin_shell.dart';
 import '../features/admin/screens/admin_dashboard_screen.dart';
 import '../features/admin/screens/admin_orders_screen.dart';
 import '../features/admin/screens/admin_products_screen.dart';
+import '../features/admin/screens/product_form_screen.dart';
 import '../core/widgets/coming_soon_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 
@@ -202,6 +203,22 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+
+      // Routes d'administration hors bottom nav
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/admin/produit/nouveau',
+        builder: (context, state) => const ProductFormScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/admin/produit/:id',
+        builder: (context, state) {
+          final productId = state.pathParameters['id'];
+          // Note: On pourrait passer l'ID ou le produit complet
+          return ProductFormScreen(productId: productId);
+        },
       ),
     ],
   );

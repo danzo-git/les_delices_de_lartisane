@@ -60,6 +60,33 @@ class FirestoreService {
     }
   }
 
+  Future<void> createProduct(Product product) async {
+    try {
+      await _firestore.collection('products').doc(product.id).set(product.toMap());
+    } catch (e) {
+      print('Erreur lors de la création du produit: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateProduct(String productId, Map<String, dynamic> data) async {
+    try {
+      await _firestore.collection('products').doc(productId).update(data);
+    } catch (e) {
+      print('Erreur lors de la mise à jour du produit: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> toggleProductAvailability(String productId, bool disponible) async {
+    try {
+      await _firestore.collection('products').doc(productId).update({'disponible': disponible});
+    } catch (e) {
+      print('Erreur lors de la mise à jour de la disponibilité: $e');
+      rethrow;
+    }
+  }
+
   // --- COMMANDES ---
   Future<void> createOrder(OrderModel order) async {
     try {
