@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../models/user_profile.dart';
+import '../../../services/notification_service.dart';
 
 /// StreamProvider pour observer le changement d'état Firebase Auth
 final authStateChangesProvider = StreamProvider<User?>((ref) {
@@ -61,6 +62,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// Écoute en temps réel le document users/{uid} — prend en compte
   /// les changements de rôle sans déconnexion/reconnexion.
   void _listenToUserProfile(String uid) {
+    NotificationService.instance.init(uid);
+    
     _firestore.collection('users').doc(uid).snapshots().listen((doc) {
       if (doc.exists && doc.data() != null) {
         final profile = UserProfile.fromMap(doc.data()!, uid);

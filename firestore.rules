@@ -1,46 +1,95 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // --- USERS ---
-    // Chaque client lit/modifie uniquement son propre profil ; admin lit tout
-    match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    
+    // -------------------------------------------------------------------------
+    // FONCTION UTILITAIRE
+    // -------------------------------------------------------------------------
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // --- PRODUCTS & CATEGORIES ---
-    // Lecture publique (utilisateurs connectés), écriture admin uniquement
-    match /products/{productId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    match /categories/{categoryId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // --- DELIVERY FEES ---
-    // Lecture publique (connecté), écriture admin
-    match /delivery_fees/{feeId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // --- ORDERS ---
-    // Client : lit/crée ses propres commandes (filtre user_id == uid)
-    // Admin : lit et écrit tout
-    match /orders/{orderId} {
-      allow read: if request.auth != null && (
-        resource.data.user_id == request.auth.uid ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
-      );
-      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+    // -------------------------------------------------------------------------
+    // USERS
+    // -------------------------------------------------------------------------
+    match /users/{userId} {
+      // Lecture : l'utilisateur peut lire son propre document ; un admin peut lire tous les documents
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      
+      // Création : l'utilisateur peut créer son propre document, le rôle doit être "client"
+      allow create: if request.auth != null 
+        && request.auth.uid == userId 
+        && request.resource.data.role == "client";
+      
+      // Modification : l'utilisateur peut modifier son document SAUF le champ 'role'
       allow update: if request.auth != null && (
-        resource.data.user_id == request.auth.uid ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        isAdmin() || 
+        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
       );
+      
+      // Suppression : interdite depuis le client
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // CATEGORIES & DELIVERY_FEES
+    // -------------------------------------------------------------------------
+    match /categories/{categoryId} {
+      allow read: if true; // Publique
+      allow write: if isAdmin();
+    }
+    
+    match /delivery_fees/{feeId} {
+      allow read: if true; // Publique
+      allow write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // PRODUCTS
+    // -------------------------------------------------------------------------
+    match /products/{productId} {
+      allow read: if true; // Publique
+      allow write: if isAdmin();
+      
+      // Sous-collection: REVIEWS
+      match /reviews/{reviewId} {
+        allow read: if true; // Publique
+        
+        // Création : un client authentifié pour lui-même
+        allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+        
+        // Modification/suppression : uniquement l'auteur ou un admin
+        allow update, delete: if request.auth != null && (resource.data.user_id == request.auth.uid || isAdmin());
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // ORDERS
+    // -------------------------------------------------------------------------
+    match /orders/{orderId} {
+      // Lecture : un client lit ses commandes, un admin lit tout
+      allow read: if request.auth != null && (resource.data.user_id == request.auth.uid || isAdmin());
+      
+      // Création : client authentifié, avec statut exact imposé
+      allow create: if request.auth != null 
+        && request.resource.data.user_id == request.auth.uid 
+        && request.resource.data.statut_commande == "en_attente_validation" 
+        && request.resource.data.statut_paiement == "non_requis";
+        
+      // Modification : client ne peut pas modifier les champs sensibles
+      allow update: if request.auth != null && (
+        isAdmin() ||
+        (
+          resource.data.user_id == request.auth.uid &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'statut_commande', 'statut_paiement', 'motif_refus', 
+            'historique_statuts', 'genius_pay_reference', 'total', 'items'
+          ])
+        )
+      );
+      
+      // Suppression : interdite depuis le client
+      allow delete: if false;
     }
   }
 }

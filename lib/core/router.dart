@@ -20,8 +20,16 @@ import '../features/admin/screens/admin_products_screen.dart';
 import '../features/admin/screens/product_form_screen.dart';
 import '../core/widgets/coming_soon_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
+import '../services/notification_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+// On injecte le navigatorKey dans le service de notification dès sa création
+final _initNotificationRouter = () {
+  NotificationService.instance.setNavigatorKey(_rootNavigatorKey);
+  return true;
+}();
+
 final _shellNavigatorAccueilKey = GlobalKey<NavigatorState>(debugLabel: 'accueil');
 final _shellNavigatorCatalogueKey = GlobalKey<NavigatorState>(debugLabel: 'catalogue');
 final _shellNavigatorPanierKey = GlobalKey<NavigatorState>(debugLabel: 'panier');

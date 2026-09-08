@@ -202,3 +202,93 @@ exports.geniusPayWebhook = onRequest(
         }
     }
 );
+
+// -----------------------------------------------------------------------------
+// NOTIFICATIONS PUSH
+// -----------------------------------------------------------------------------
+const { onDocumentUpdated } = require('firebase-functions/v2/firestore');
+const { getMessaging } = require('firebase-admin/messaging');
+
+exports.onOrderUpdate = onDocumentUpdated('orders/{orderId}', async (event) => {
+    const orderId = event.params.orderId;
+    const oldData = event.data.before.data();
+    const newData = event.data.after.data();
+
+    // Vérifier si le statut_commande a changé
+    if (oldData.statut_commande === newData.statut_commande) {
+        return null;
+    }
+
+    const notifiableStatuses = ['acceptee', 'refusee', 'en_preparation', 'prete', 'livree'];
+    const newStatus = newData.statut_commande;
+
+    if (!notifiableStatuses.includes(newStatus)) {
+        return null; // Statut non notifiable
+    }
+
+    const userId = newData.user_id;
+    if (!userId) {
+        console.warn(`Commande ${orderId} sans user_id. Pas de notification envoyée.`);
+        return null;
+    }
+
+    try {
+        const db = getFirestore();
+        const userDoc = await db.collection('users').doc(userId).get();
+
+        if (!userDoc.exists || !userDoc.data().fcm_token) {
+            console.warn(`Aucun FCM token trouvé pour l'utilisateur ${userId}`);
+            return null;
+        }
+
+        const token = userDoc.data().fcm_token;
+        const orderNumber = newData.numero || orderId;
+
+        // Préparer le contenu du message en fonction du statut
+        let title = '';
+        let body = '';
+
+        switch (newStatus) {
+            case 'acceptee':
+                title = 'Bonne nouvelle !';
+                body = `Votre commande #${orderNumber} a été acceptée, vous pouvez procéder au paiement.`;
+                break;
+            case 'refusee':
+                title = 'Commande non disponible';
+                body = newData.motif_refus ? `Motif: ${newData.motif_refus}` : `Votre commande #${orderNumber} a été refusée.`;
+                break;
+            case 'en_preparation':
+                title = 'Préparation en cours';
+                body = `Votre commande #${orderNumber} est en cours de préparation.`;
+                break;
+            case 'prete':
+                title = 'Commande prête !';
+                body = `Votre commande #${orderNumber} est prête pour le retrait ou la livraison.`;
+                break;
+            case 'livree':
+                title = 'Commande livrée';
+                body = `Votre commande #${orderNumber} a été livrée. Merci de votre confiance !`;
+                break;
+        }
+
+        const payload = {
+            token: token,
+            notification: {
+                title: title,
+                body: body
+            },
+            data: {
+                order_id: orderId,
+                type: 'order_status_update'
+            }
+        };
+
+        const response = await getMessaging().send(payload);
+        console.log(`Notification envoyée avec succès pour la commande ${orderId}:`, response);
+
+    } catch (error) {
+        console.error(`Erreur lors de l'envoi de la notification pour la commande ${orderId}:`, error);
+    }
+    
+    return null;
+});
