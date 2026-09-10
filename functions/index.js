@@ -286,6 +286,21 @@ exports.onOrderUpdate = onDocumentUpdated('orders/{orderId}', async (event) => {
         const response = await getMessaging().send(payload);
         console.log(`Notification envoyée avec succès pour la commande ${orderId}:`, response);
 
+        // Écriture de la notification dans l'historique in-app
+        try {
+            await db.collection('users').doc(userId).collection('notifications').add({
+                titre: title,
+                corps: body,
+                order_id: orderId,
+                type: 'order_status_update',
+                lu: false,
+                created_at: FieldValue.serverTimestamp(), // Timestamp Firestore natif (compatible SDK Dart)
+            });
+            console.log(`Notification in-app écrite pour l'utilisateur ${userId}`);
+        } catch (historyError) {
+            console.error(`Erreur écriture historique notification pour ${userId}:`, historyError);
+        }
+
     } catch (error) {
         console.error(`Erreur lors de l'envoi de la notification pour la commande ${orderId}:`, error);
     }

@@ -21,6 +21,7 @@ import '../features/admin/screens/product_form_screen.dart';
 import '../core/widgets/coming_soon_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../services/notification_service.dart';
+import '../features/notifications/screens/notifications_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -33,6 +34,7 @@ final _initNotificationRouter = () {
 final _shellNavigatorAccueilKey = GlobalKey<NavigatorState>(debugLabel: 'accueil');
 final _shellNavigatorCatalogueKey = GlobalKey<NavigatorState>(debugLabel: 'catalogue');
 final _shellNavigatorPanierKey = GlobalKey<NavigatorState>(debugLabel: 'panier');
+final _shellNavigatorCommandesKey = GlobalKey<NavigatorState>(debugLabel: 'commandes');
 final _shellNavigatorCompteKey = GlobalKey<NavigatorState>(debugLabel: 'compte');
 final _adminNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'admin-dashboard');
 final _adminNavigatorCommandesKey = GlobalKey<NavigatorState>(debugLabel: 'admin-commandes');
@@ -120,6 +122,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
           StatefulShellBranch(
+            navigatorKey: _shellNavigatorCommandesKey,
+            routes: [
+              GoRoute(
+                // Use the existing '/orders' path but move it into the bottom nav
+                path: '/orders',
+                builder: (context, state) => const OrderHistoryScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
             navigatorKey: _shellNavigatorCompteKey,
             routes: [
               GoRoute(
@@ -142,8 +154,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/orders',
-        builder: (context, state) => const OrderHistoryScreen(),
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

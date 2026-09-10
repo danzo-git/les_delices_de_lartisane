@@ -20,6 +20,8 @@ class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
+  static String? pendingRoute;
+
   GlobalKey<NavigatorState>? _navigatorKey;
 
   void setNavigatorKey(GlobalKey<NavigatorState> key) {
@@ -102,10 +104,9 @@ class NotificationService {
     RemoteMessage? initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
       debugPrint('App opened from cold start via notification');
-      // On retarde un peu l'exécution pour s'assurer que le premier écran est monté
-      Future.delayed(const Duration(seconds: 2), () {
-        _handleMessageAction(initialMessage);
-      });
+      if (initialMessage.data.containsKey('order_id')) {
+        pendingRoute = '/order/${initialMessage.data['order_id']}';
+      }
     }
   }
 

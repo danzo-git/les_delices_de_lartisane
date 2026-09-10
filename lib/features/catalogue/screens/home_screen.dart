@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../notifications/providers/notifications_provider.dart';
 import '../providers/catalogue_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -14,11 +15,58 @@ class HomeScreen extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final userName = authState.profile?.nom ?? 'Client';
     final categoriesAsync = ref.watch(categoriesProvider);
-    // Pour les "meilleures ventes", on prend simplement les produits sans filtre spécifique pour l'instant
     final productsAsync = ref.watch(productsProvider);
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                IconButton(
+                  key: const Key('notifications_bell_btn'),
+                  onPressed: () => context.push('/notifications'),
+                  icon: const Icon(Icons.notifications_outlined),
+                  tooltip: 'Notifications',
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: IgnorePointer(
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaire,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                        child: Text(
+                          unreadCount > 99 ? '99+' : '$unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            height: 1.1,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
+        top: false,
         child: CustomScrollView(
           slivers: [
             // Bandeau de bienvenue
@@ -247,12 +295,6 @@ class HomeScreen extends ConsumerWidget {
                           product: product,
                           onTap: () {
                             context.push('/product/${product.id}');
-                          },
-                          onAddTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('${product.nom} ajouté au panier')),
-                            );
-                            // TODO: Brancher la logique du vrai panier ici plus tard
                           },
                         );
                       },

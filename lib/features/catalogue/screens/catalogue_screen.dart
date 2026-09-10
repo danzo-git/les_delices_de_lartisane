@@ -130,12 +130,6 @@ class CatalogueScreen extends ConsumerWidget {
                       onTap: () {
                         context.push('/product/${product.id}');
                       },
-                      onAddTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${product.nom} ajouté au panier')),
-                        );
-                        // TODO: Logique d'ajout au vrai panier
-                      },
                     );
                   },
                 );

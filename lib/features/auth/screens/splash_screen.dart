@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/widgets/app_logo.dart';
 import '../../../theme/app_colors.dart';
+import '../../../services/notification_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -27,7 +28,13 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        context.go('/home');
+        if (NotificationService.pendingRoute != null) {
+          final route = NotificationService.pendingRoute!;
+          NotificationService.pendingRoute = null;
+          context.go(route);
+        } else {
+          context.go('/home');
+        }
       } else {
         context.go('/login');
       }

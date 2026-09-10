@@ -41,6 +41,10 @@ class MainScreen extends StatelessWidget {
             label: 'Panier',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long_outlined),
+            label: 'Commandes',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             label: 'Compte',
           ),

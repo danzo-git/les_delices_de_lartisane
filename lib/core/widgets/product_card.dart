@@ -1,22 +1,76 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/product.dart';
 import '../../theme/app_colors.dart';
+import '../../models/cart_item.dart';
+import '../../features/panier/providers/panier_provider.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerWidget {
   final Product product;
   final VoidCallback onTap;
-  final VoidCallback onAddTap;
+
+  /// Callback optionnel — si non fourni, le widget gère lui-même l'ajout au panier.
+  final VoidCallback? onAddTap;
 
   const ProductCard({
     super.key,
     required this.product,
     required this.onTap,
-    required this.onAddTap,
+    this.onAddTap,
   });
 
+  void _addToCart(BuildContext context, WidgetRef ref) {
+    if (product.options.isEmpty) return;
+
+    // Option la moins chère = première après tri ascendant par prix
+    final sortedOptions = List<ProductOption>.from(product.options)
+      ..sort((a, b) => a.prix.compareTo(b.prix));
+    final cheapestOption = sortedOptions.first;
+
+    final item = CartItem(
+      productId: product.id,
+      nom: product.nom,
+      optionLabel: cheapestOption.label,
+      prixUnitaire: cheapestOption.prix,
+      quantite: 1,
+      sousTotal: cheapestOption.prix,
+      imageUrl: product.imageUrl,
+    );
+
+    ref.read(panierProvider.notifier).ajouterArticle(item);
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '${product.nom} ajouté au panier',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppColors.primaire,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'Voir',
+          textColor: Colors.white,
+          onPressed: () {},
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Calcul du prix de départ (le plus bas)
     double startingPrice = 0.0;
     if (product.options.isNotEmpty) {
@@ -100,7 +154,13 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: onAddTap,
+                        onTap: () {
+                          if (onAddTap != null) {
+                            onAddTap!();
+                          } else {
+                            _addToCart(context, ref);
+                          }
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: const BoxDecoration(

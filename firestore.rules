@@ -29,6 +29,30 @@ service cloud.firestore {
       
       // Suppression : interdite depuis le client
       allow delete: if false;
+
+      // -----------------------------------------------------------------------
+      // NOTIFICATIONS (sous-collection)
+      // -----------------------------------------------------------------------
+      match /notifications/{notifId} {
+        // Lecture : uniquement l'utilisateur propriétaire ou un admin
+        allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+
+        // Création : réservée aux admins et aux Cloud Functions (pas depuis le client)
+        allow create: if isAdmin();
+
+        // Mise à jour : l'utilisateur peut uniquement marquer comme lu (champ 'lu')
+        //               Un admin peut tout modifier
+        allow update: if request.auth != null && (
+          isAdmin() ||
+          (
+            request.auth.uid == userId &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lu'])
+          )
+        );
+
+        // Suppression : interdite depuis le client
+        allow delete: if false;
+      }
     }
 
     // -------------------------------------------------------------------------

@@ -140,10 +140,21 @@ class AdminShell extends ConsumerWidget {
                     alignment: Alignment.bottomCenter,
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 24.0),
-                      child: IconButton(
-                        onPressed: () => _logout(context, ref),
-                        icon: const Icon(Icons.logout_rounded, color: AppColors.secondaire),
-                        tooltip: 'Déconnexion',
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () => context.go('/home'),
+                            icon: const Icon(Icons.storefront_rounded, color: AppColors.secondaire),
+                            tooltip: 'Retour client',
+                          ),
+                          const SizedBox(height: 8),
+                          IconButton(
+                            onPressed: () => _logout(context, ref),
+                            icon: const Icon(Icons.logout_rounded, color: AppColors.secondaire),
+                            tooltip: 'Déconnexion',
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -202,10 +213,20 @@ class AdminShell extends ConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  onPressed: () => _logout(context, ref),
-                  icon: const Icon(Icons.logout_rounded, color: AppColors.secondaire, size: 22),
-                  tooltip: 'Déconnexion',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => context.go('/home'),
+                      icon: const Icon(Icons.storefront_rounded, color: AppColors.secondaire, size: 22),
+                      tooltip: 'Retour client',
+                    ),
+                    IconButton(
+                      onPressed: () => _logout(context, ref),
+                      icon: const Icon(Icons.logout_rounded, color: AppColors.secondaire, size: 22),
+                      tooltip: 'Déconnexion',
+                    ),
+                  ],
                 ),
               ),
             ],
