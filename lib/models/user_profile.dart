@@ -36,6 +36,7 @@ class UserProfile {
   final String role; // "client" | "admin"
   final List<UserAddress> adresses;
   final DateTime? createdAt;
+  final bool? notificationsEnabled;
 
   UserProfile({
     required this.uid,
@@ -45,6 +46,7 @@ class UserProfile {
     required this.role,
     required this.adresses,
     this.createdAt,
+    this.notificationsEnabled,
   });
 
   factory UserProfile.fromMap(Map<String, dynamic> map, String uid) {
@@ -61,6 +63,7 @@ class UserProfile {
       createdAt: map['created_at'] != null
           ? (map['created_at'] as Timestamp).toDate()
           : null,
+      notificationsEnabled: map['notifications_enabled'] as bool? ?? true,
     );
   }
 
@@ -72,6 +75,7 @@ class UserProfile {
       'role': role,
       'adresses': adresses.map((a) => a.toMap()).toList(),
       'created_at': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
+      'notifications_enabled': notificationsEnabled,
     };
   }
 }

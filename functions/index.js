@@ -236,12 +236,14 @@ exports.onOrderUpdate = onDocumentUpdated('orders/{orderId}', async (event) => {
         const db = getFirestore();
         const userDoc = await db.collection('users').doc(userId).get();
 
-        if (!userDoc.exists || !userDoc.data().fcm_token) {
+        const userDocData = userDoc.data();
+        if (!userDocData.fcm_token) {
             console.warn(`Aucun FCM token trouvé pour l'utilisateur ${userId}`);
             return null;
         }
 
-        const token = userDoc.data().fcm_token;
+        const token = userDocData.fcm_token;
+        const notificationsEnabled = userDocData.notifications_enabled !== false; // true par défaut
         const orderNumber = newData.numero || orderId;
 
         // Préparer le contenu du message en fonction du statut
@@ -271,20 +273,24 @@ exports.onOrderUpdate = onDocumentUpdated('orders/{orderId}', async (event) => {
                 break;
         }
 
-        const payload = {
-            token: token,
-            notification: {
-                title: title,
-                body: body
-            },
-            data: {
-                order_id: orderId,
-                type: 'order_status_update'
-            }
-        };
+        if (notificationsEnabled) {
+            const payload = {
+                token: token,
+                notification: {
+                    title: title,
+                    body: body
+                },
+                data: {
+                    order_id: orderId,
+                    type: 'order_status_update'
+                }
+            };
 
-        const response = await getMessaging().send(payload);
-        console.log(`Notification envoyée avec succès pour la commande ${orderId}:`, response);
+            const response = await getMessaging().send(payload);
+            console.log(`Notification envoyée avec succès pour la commande ${orderId}:`, response);
+        } else {
+            console.log(`Notification push désactivée pour l'utilisateur ${userId}, commande ${orderId}`);
+        }
 
         // Écriture de la notification dans l'historique in-app
         try {

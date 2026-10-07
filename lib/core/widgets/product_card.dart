@@ -5,6 +5,8 @@ import '../../models/product.dart';
 import '../../theme/app_colors.dart';
 import '../../models/cart_item.dart';
 import '../../features/panier/providers/panier_provider.dart';
+import '../../features/auth/providers/auth_provider.dart';
+import '../../services/firestore_service.dart';
 
 class ProductCard extends ConsumerWidget {
   final Product product;
@@ -96,20 +98,59 @@ class ProductCard extends ConsumerWidget {
           children: [
             // Image
             Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: CachedNetworkImage(
-                    imageUrl: product.imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                    errorWidget: (context, url, error) => Container(
-                      color: AppColors.fond,
-                      child: const Icon(Icons.cake, color: AppColors.primaire, size: 40),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: CachedNetworkImage(
+                        imageUrl: product.imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => Container(
+                          color: AppColors.fond,
+                          child: const Icon(Icons.cake, color: AppColors.primaire, size: 40),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final userProfile = ref.watch(authProvider).profile;
+                        if (userProfile == null) return const SizedBox.shrink();
+                        
+                        return StreamBuilder<bool>(
+                          stream: FirestoreService().isFavori(userProfile.uid, product.id),
+                          builder: (context, snapshot) {
+                            final isFavori = snapshot.data ?? false;
+                            return GestureDetector(
+                              onTap: () {
+                                FirestoreService().toggleFavori(userProfile.uid, product.id);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  isFavori ? Icons.favorite : Icons.favorite_border,
+                                  color: isFavori ? AppColors.primaire : Colors.grey,
+                                  size: 20,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
             

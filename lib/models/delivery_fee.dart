@@ -16,7 +16,7 @@ class DeliveryFee {
   factory DeliveryFee.fromMap(Map<String, dynamic> map, String id) {
     return DeliveryFee(
       id: id,
-      commune: map['commune'] as String? ?? '',
+      commune: map['commune'] as String? ?? map['nom'] as String? ?? id,
       frais: (map['frais'] as num?)?.toDouble() ?? 0.0,
       actif: map['actif'] as bool? ?? false,
     );

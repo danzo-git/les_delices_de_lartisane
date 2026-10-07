@@ -103,53 +103,34 @@ class ProfileScreen extends ConsumerWidget {
               onTap: () => context.push('/orders'),
             ),
             const Divider(height: 1, indent: 56),
-            ExpansionTile(
-              leading: const Icon(Icons.location_on_outlined, color: Color(0xFF2C2C2C)),
-              title: const Text(
-                'Mes adresses',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF2C2C2C),
-                ),
-              ),
-              children: [
-                if (adresses.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text('Aucune adresse enregistrée.', style: TextStyle(color: Color(0xFF8E8E93))),
-                  )
-                else
-                  ...adresses.map((addr) => ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 56),
-                    title: Text(addr.label, style: const TextStyle(fontWeight: FontWeight.w500)),
-                    subtitle: Text('${addr.commune} - ${addr.details}'),
-                  )),
-              ],
+            _MenuItem(
+              icon: Icons.location_on_outlined,
+              title: 'Mes adresses',
+              onTap: () => context.push('/addresses'),
             ),
             const Divider(height: 1, indent: 56),
             _MenuItem(
               icon: Icons.favorite_border,
               title: 'Mes favoris',
-              onTap: () => context.push('/coming-soon'),
-            ),
-            const Divider(height: 1, indent: 56),
-            _MenuItem(
-              icon: Icons.notifications_none,
-              title: 'Notifications',
-              onTap: () => context.push('/coming-soon'),
+              onTap: () => context.push('/favoris'),
             ),
             const Divider(height: 1, indent: 56),
             _MenuItem(
               icon: Icons.help_outline,
               title: 'Aide & FAQ',
-              onTap: () => context.push('/coming-soon'),
+              onTap: () => context.push('/faq'),
             ),
             const Divider(height: 1, indent: 56),
             _MenuItem(
               icon: Icons.settings_outlined,
               title: 'Paramètres',
-              onTap: () => context.push('/coming-soon'),
+              onTap: () => context.push('/parametres'),
+            ),
+            const Divider(height: 1, indent: 56),
+            _MenuItem(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Politique de confidentialité',
+              onTap: () => context.push('/privacy-policy'),
             ),
           ],
         ),

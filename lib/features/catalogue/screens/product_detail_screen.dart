@@ -7,6 +7,8 @@ import '../../../models/cart_item.dart';
 import '../../../theme/app_colors.dart';
 import '../providers/catalogue_provider.dart';
 import '../../panier/providers/panier_provider.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../../services/firestore_service.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -43,6 +45,39 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ),
           ),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Consumer(
+              builder: (context, ref, child) {
+                final userProfile = ref.watch(authProvider).profile;
+                if (userProfile == null) return const SizedBox.shrink();
+                
+                return StreamBuilder<bool>(
+                  stream: FirestoreService().isFavori(userProfile.uid, widget.productId),
+                  builder: (context, snapshot) {
+                    final isFavori = snapshot.data ?? false;
+                    return Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          isFavori ? Icons.favorite : Icons.favorite_border,
+                          color: isFavori ? AppColors.primaire : AppColors.texte,
+                        ),
+                        onPressed: () {
+                          FirestoreService().toggleFavori(userProfile.uid, widget.productId);
+                        },
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       body: productAsync.when(
         data: (product) {

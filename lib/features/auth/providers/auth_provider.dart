@@ -224,6 +224,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _auth.signOut();
     state = const AuthState();
   }
+
+  /// Mise à jour des adresses
+  Future<bool> updateAddresses(List<UserAddress> addresses) async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+
+    try {
+      await _firestore.collection('users').doc(user.uid).update({
+        'adresses': addresses.map((a) => a.toMap()).toList(),
+      });
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: 'Erreur lors de la mise à jour des adresses: $e');
+      return false;
+    }
+  }
 }
 
 /// Provider global d'authentification

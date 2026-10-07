@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/order_provider.dart';
@@ -46,10 +47,44 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
     }
   }
 
-  void _showErrorSnackBar(String message) {
+  Future<void> _cancelOrder(OrderModel order) async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Annuler la commande'),
+        content: const Text('Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Non', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Oui, annuler'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        final firestoreService = ref.read(firestoreServiceProvider);
+        await firestoreService.cancelOrder(order.id);
+        _showErrorSnackBar("Commande annulée avec succès.", isError: false);
+      } catch (e) {
+        _showErrorSnackBar("Erreur lors de l'annulation: $e");
+      }
+    }
+  }
+
+  void _showErrorSnackBar(String message, {bool isError = true}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
     );
   }
 
@@ -62,6 +97,10 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2C2C2C)),
+           onPressed: () => context.go('/home'),
+        ),
         title: const Text(
           'Suivi de commande',
           style: TextStyle(color: Color(0xFF2C2C2C), fontWeight: FontWeight.bold, fontSize: 20),
@@ -83,6 +122,8 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                 
                 if (order.statutCommande == 'refusee')
                   _buildRefusalCard(order)
+                else if (order.statutCommande == 'annulee')
+                  _buildCancellationCard()
                 else if (order.statutCommande == 'acceptee' && order.statutPaiement != 'confirme')
                   _buildPaymentPrompt(order)
                 else ...[
@@ -93,12 +134,16 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                 _buildRecap(order),
                 
                 // On cache le mode de paiement tant que la commande n'est pas acceptée/payée
-                if (order.statutCommande != 'en_attente_validation' && order.statutCommande != 'refusee') ...[
+                if (order.statutCommande != 'en_attente_validation' && order.statutCommande != 'refusee' && order.statutCommande != 'annulee') ...[
                   const SizedBox(height: 24),
                   _buildPaymentMethod(order),
                 ],
                 
                 const SizedBox(height: 32),
+                if (order.statutCommande == 'en_attente_validation') ...[
+                  _buildCancelButton(order),
+                  const SizedBox(height: 16),
+                ],
                 _buildContactButton(context),
               ],
             ),
@@ -124,6 +169,38 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 14),
         ),
       ],
+    );
+  }
+
+  Widget _buildCancellationCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.cancel_outlined, color: Colors.red.shade800),
+              const SizedBox(width: 8),
+              Text(
+                'Commande annulée',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red.shade800, fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "Vous avez annulé cette commande.",
+            style: TextStyle(color: Colors.red.shade900),
+          ),
+        ],
+      ),
     );
   }
 
@@ -390,6 +467,19 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
         side: const BorderSide(color: AppColors.primaire),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Widget _buildCancelButton(OrderModel order) {
+    return OutlinedButton.icon(
+      onPressed: () => _cancelOrder(order),
+      icon: const Icon(Icons.close, color: Colors.red),
+      label: const Text('Annuler la commande', style: TextStyle(color: Colors.red)),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        side: const BorderSide(color: Colors.red),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );

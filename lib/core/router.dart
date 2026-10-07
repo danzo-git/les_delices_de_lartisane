@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:les_delices_artisane/features/profil/screens/faq.dart';
+import 'package:les_delices_artisane/features/profil/screens/parametres_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/signup_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
@@ -22,6 +24,9 @@ import '../core/widgets/coming_soon_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../services/notification_service.dart';
 import '../features/notifications/screens/notifications_screen.dart';
+import '../features/legal/screens/privacy_policy_screen.dart';
+import '../features/profil/screens/addresses_screen.dart';
+import '../features/profil/screens/favorites_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -36,6 +41,9 @@ final _shellNavigatorCatalogueKey = GlobalKey<NavigatorState>(debugLabel: 'catal
 final _shellNavigatorPanierKey = GlobalKey<NavigatorState>(debugLabel: 'panier');
 final _shellNavigatorCommandesKey = GlobalKey<NavigatorState>(debugLabel: 'commandes');
 final _shellNavigatorCompteKey = GlobalKey<NavigatorState>(debugLabel: 'compte');
+// final _shellNavigatorParametresKey = GlobalKey<NavigatorState>(debugLabel: 'parametres');
+final _shellNavigatorFaqKey = GlobalKey<NavigatorState>(debugLabel: 'faq');
+final _shellNavigatorParametresKey = GlobalKey<NavigatorState>(debugLabel: 'parametres');
 final _adminNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'admin-dashboard');
 final _adminNavigatorCommandesKey = GlobalKey<NavigatorState>(debugLabel: 'admin-commandes');
 final _adminNavigatorProduitsKey = GlobalKey<NavigatorState>(debugLabel: 'admin-produits');
@@ -170,6 +178,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/coming-soon',
         builder: (context, state) => const ComingSoonScreen(),
       ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/favoris',
+        builder: (context, state) => const FavoritesScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/faq',
+        builder: (context, state) => FAQScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/parametres',
+        builder: (context, state) => const ParametresScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/privacy-policy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/addresses',
+        builder: (context, state) => const AddressesScreen(),
+      ),
 
       // ── ESPACE ADMIN ───────────────────────────────────────────────────────
       StatefulShellRoute.indexedStack(
@@ -218,7 +251,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/admin/parametres',
-                builder: (context, state) => const ComingSoonScreen(),
+                builder: (context, state) => const ParametresScreen(),
               ),
             ],
           ),

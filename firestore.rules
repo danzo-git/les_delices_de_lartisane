@@ -53,6 +53,17 @@ service cloud.firestore {
         // Suppression : interdite depuis le client
         allow delete: if false;
       }
+
+      // -----------------------------------------------------------------------
+      // FAVORIS (sous-collection)
+      // -----------------------------------------------------------------------
+      match /favoris/{productId} {
+        // Lecture : l'utilisateur ou un admin
+        allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+        
+        // Modification/Création/Suppression : l'utilisateur ou un admin
+        allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      }
     }
 
     // -------------------------------------------------------------------------
@@ -101,14 +112,25 @@ service cloud.firestore {
         && request.resource.data.statut_paiement == "non_requis";
         
       // Modification : client ne peut pas modifier les champs sensibles
+      // SAUF pour annuler une commande en attente
       allow update: if request.auth != null && (
         isAdmin() ||
         (
           resource.data.user_id == request.auth.uid &&
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-            'statut_commande', 'statut_paiement', 'motif_refus', 
-            'historique_statuts', 'genius_pay_reference', 'total', 'items'
-          ])
+          (
+            // Cas 1 : modification normale (ex: instruction de livraison, si applicable)
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+              'statut_commande', 'statut_paiement', 'motif_refus', 
+              'historique_statuts', 'genius_pay_reference', 'total', 'items'
+            ])
+            ||
+            // Cas 2 : Annulation de la commande par le client
+            (
+              resource.data.statut_commande == "en_attente_validation" &&
+              request.resource.data.statut_commande == "annulee" &&
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['statut_commande', 'historique_statuts'])
+            )
+          )
         )
       );
       

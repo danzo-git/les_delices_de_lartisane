@@ -16,6 +16,10 @@ class OrderHistoryScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2C2C2C)),
+          onPressed: () => context.go('/home'),
+        ),
         title: const Text(
           'Mes commandes',
           style: TextStyle(
@@ -132,6 +136,22 @@ class OrderHistoryScreen extends ConsumerWidget {
         bgColor = const Color(0xFFE8F5E9);
         textColor = const Color(0xFF4CAF50);
         label = 'Prête';
+        break;
+      case 'en_attente_validation':
+        bgColor = const Color(0xFFE3F2FD);
+        textColor = const Color(0xFF2196F3);
+        label = 'En attente';
+        break;
+      case 'acceptee':
+        bgColor = const Color(0xFFE8F5E9);
+        textColor = const Color(0xFF4CAF50);
+        label = 'Acceptée (à payer)';
+        break;
+      case 'annulee':
+      case 'refusee':
+        bgColor = const Color(0xFFFFEBEE);
+        textColor = const Color(0xFFF44336);
+        label = status == 'annulee' ? 'Annulée' : 'Refusée';
         break;
       case 'livree':
         bgColor = const Color(0xFFE8F5E9); // Match "Succès" color from design system if different

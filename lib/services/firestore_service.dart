@@ -129,6 +129,31 @@ class FirestoreService {
             .toList());
   }
 
+  Future<void> cancelOrder(String orderId) async {
+    try {
+      final doc = await _firestore.collection('orders').doc(orderId).get();
+      if (!doc.exists) return;
+      
+      final currentOrder = OrderModel.fromMap(doc.data()!, doc.id);
+      if (currentOrder.statutCommande != 'en_attente_validation') {
+        throw Exception('Impossible d\'annuler une commande déjà traitée.');
+      }
+
+      final newHistoryEntry = OrderStatusHistory(
+        statut: 'annulee',
+        date: DateTime.now(),
+      ).toMap();
+
+      await _firestore.collection('orders').doc(orderId).update({
+        'statut_commande': 'annulee',
+        'historique_statuts': FieldValue.arrayUnion([newHistoryEntry]),
+      });
+    } catch (e) {
+      print('Erreur lors de l\'annulation de la commande: $e');
+      rethrow;
+    }
+  }
+
   // --- FRAIS DE LIVRAISON ---
   Future<List<DeliveryFee>> getDeliveryFees() async {
     try {
@@ -143,5 +168,44 @@ class FirestoreService {
       print('Erreur lors de la récupération des frais de livraison: $e');
       return [];
     }
+  }
+
+  // --- FAVORIS ---
+  Stream<bool> isFavori(String userId, String productId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('favoris')
+        .doc(productId)
+        .snapshots()
+        .map((doc) => doc.exists);
+  }
+
+  Future<void> toggleFavori(String userId, String productId) async {
+    final docRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('favoris')
+        .doc(productId);
+    
+    final doc = await docRef.get();
+    if (doc.exists) {
+      await docRef.delete();
+    } else {
+      await docRef.set({
+        'product_id': productId,
+        'added_at': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  Stream<List<String>> getFavorisIds(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('favoris')
+        .orderBy('added_at', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.id).toList());
   }
 }
