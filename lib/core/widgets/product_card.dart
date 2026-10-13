@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'motion_widgets.dart';
 import '../../models/product.dart';
 import '../../theme/app_colors.dart';
 import '../../models/cart_item.dart';
@@ -79,7 +80,7 @@ class ProductCard extends ConsumerWidget {
       startingPrice = product.options.map((o) => o.prix).reduce((a, b) => a < b ? a : b);
     }
 
-    return GestureDetector(
+    return PressScale(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
@@ -105,13 +106,16 @@ class ProductCard extends ConsumerWidget {
                     child: SizedBox(
                       width: double.infinity,
                       height: double.infinity,
-                      child: CachedNetworkImage(
-                        imageUrl: product.imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                        errorWidget: (context, url, error) => Container(
-                          color: AppColors.fond,
-                          child: const Icon(Icons.cake, color: AppColors.primaire, size: 40),
+                      child: Hero(
+                        tag: 'product-image-${product.id}',
+                        child: CachedNetworkImage(
+                          imageUrl: product.imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => Container(
+                            color: AppColors.fond,
+                            child: const Icon(Icons.cake, color: AppColors.primaire, size: 40),
+                          ),
                         ),
                       ),
                     ),
@@ -138,10 +142,18 @@ class ProductCard extends ConsumerWidget {
                                   color: Colors.white.withValues(alpha: 0.8),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
-                                  isFavori ? Icons.favorite : Icons.favorite_border,
-                                  color: isFavori ? AppColors.primaire : Colors.grey,
-                                  size: 20,
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 220),
+                                  transitionBuilder: (child, animation) => ScaleTransition(
+                                    scale: animation,
+                                    child: child,
+                                  ),
+                                  child: Icon(
+                                    isFavori ? Icons.favorite : Icons.favorite_border,
+                                    key: ValueKey(isFavori),
+                                    color: isFavori ? AppColors.primaire : Colors.grey,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             );

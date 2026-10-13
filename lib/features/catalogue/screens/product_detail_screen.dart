@@ -104,13 +104,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     SizedBox(
                       height: 300,
                       width: double.infinity,
-                      child: CachedNetworkImage(
-                        imageUrl: product.imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                        errorWidget: (context, url, error) => Container(
-                          color: AppColors.fond,
-                          child: const Icon(Icons.cake, size: 80, color: AppColors.primaire),
+                      child: Hero(
+                        tag: 'product-image-${product.id}',
+                        child: CachedNetworkImage(
+                          imageUrl: product.imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => Container(
+                            color: AppColors.fond,
+                            child: const Icon(Icons.cake, size: 80, color: AppColors.primaire),
+                          ),
                         ),
                       ),
                     ),
@@ -220,7 +223,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   _selectedOption = option;
                                 });
                               },
-                              child: Container(
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 220),
+                                curve: Curves.easeOutCubic,
                                 margin: const EdgeInsets.only(bottom: 12),
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
@@ -334,11 +339,25 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text('Total', style: TextStyle(color: AppColors.secondaire)),
-                          Text(
-                            '${totalPrice.toInt()} FCFA',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 180),
+                            transitionBuilder: (child, animation) => FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0, 0.18),
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: child,
+                              ),
+                            ),
+                            child: Text(
+                              '${totalPrice.toInt()} FCFA',
+                              key: ValueKey(totalPrice),
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
                           ),
                         ],
                       ),

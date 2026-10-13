@@ -514,17 +514,35 @@ class _TimelineRow extends StatelessWidget {
       children: [
         Column(
           children: [
-            Container(
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOutCubic,
               width: 24,
               height: 24,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isCompleted ? AppColors.primaire : const Color(0xFFE0E0E0),
               ),
-              child: isCompleted ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                transitionBuilder: (child, animation) => ScaleTransition(
+                  scale: animation,
+                  child: child,
+                ),
+                child: isCompleted
+                    ? const Icon(
+                        Icons.check,
+                        key: ValueKey('complete'),
+                        size: 16,
+                        color: Colors.white,
+                      )
+                    : const SizedBox(key: ValueKey('pending'), width: 16, height: 16),
+              ),
             ),
             if (!isLast)
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
                 width: 2,
                 height: 40,
                 color: isCompleted ? AppColors.primaire : const Color(0xFFE0E0E0),

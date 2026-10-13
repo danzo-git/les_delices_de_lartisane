@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../core/widgets/motion_widgets.dart';
 import '../../../theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notifications_provider.dart';
@@ -73,7 +74,8 @@ class HomeScreen extends ConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.all(24.0),
               sliver: SliverToBoxAdapter(
-                child: Column(
+                child: FadeSlideIn(
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -105,15 +107,18 @@ class HomeScreen extends ConsumerWidget {
                       },
                     ),
                   ],
+                  ),
                 ),
               ),
             ),
 
             // Bannière promo (optionnelle, selon maquette "Mignardises artisanales préparées avec passion")
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Container(
+              child: FadeSlideIn(
+                delay: const Duration(milliseconds: 90),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -147,15 +152,18 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  ),
                 ),
               ),
             ),
 
             // Catégories
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 32.0, bottom: 16.0),
-                child: Column(
+              child: FadeSlideIn(
+                delay: const Duration(milliseconds: 150),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 32.0, bottom: 16.0),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
@@ -236,6 +244,7 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
+                  ),
                 ),
               ),
             ),
@@ -291,11 +300,14 @@ class HomeScreen extends ConsumerWidget {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final product = bestSellers[index];
-                        return ProductCard(
-                          product: product,
-                          onTap: () {
-                            context.push('/product/${product.id}');
-                          },
+                        return FadeSlideIn(
+                          delay: Duration(milliseconds: 210 + index * 55),
+                          child: ProductCard(
+                            product: product,
+                            onTap: () {
+                              context.push('/product/${product.id}');
+                            },
+                          ),
                         );
                       },
                       childCount: bestSellers.length,
