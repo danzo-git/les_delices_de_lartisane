@@ -41,7 +41,7 @@ class NotificationService {
       
       // Configuration Android pour les notifications locales (premier plan)
       const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+          AndroidInitializationSettings('ic_notification');
       const InitializationSettings initializationSettings =
           InitializationSettings(android: initializationSettingsAndroid);
       
@@ -191,7 +191,7 @@ class NotificationService {
             'Statut des commandes',
             importance: Importance.max,
             priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
+            icon: 'ic_notification',
           ),
         ),
         payload: jsonEncode(message.data),

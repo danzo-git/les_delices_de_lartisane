@@ -17,6 +17,7 @@ import '../features/commande/screens/order_history_screen.dart';
 import '../features/commande/screens/order_tracking_screen.dart';
 import '../features/admin/screens/admin_shell.dart';
 import '../features/admin/screens/admin_dashboard_screen.dart';
+import '../features/admin/screens/admin_statistics_screen.dart';
 import '../features/admin/screens/admin_orders_screen.dart';
 import '../features/admin/screens/admin_products_screen.dart';
 import '../features/admin/screens/product_form_screen.dart';
@@ -242,7 +243,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/admin/statistiques',
-                builder: (context, state) => const ComingSoonScreen(),
+                builder: (context, state) => const AdminStatisticsScreen(),
               ),
             ],
           ),
