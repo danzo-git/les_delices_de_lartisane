@@ -206,8 +206,52 @@ exports.geniusPayWebhook = onRequest(
 // -----------------------------------------------------------------------------
 // NOTIFICATIONS PUSH
 // -----------------------------------------------------------------------------
-const { onDocumentUpdated } = require('firebase-functions/v2/firestore');
+const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/firestore');
 const { getMessaging } = require('firebase-admin/messaging');
+
+exports.onOrderCreated = onDocumentCreated('orders/{orderId}', async (event) => {
+    const order = event.data.data();
+    const orderId = event.params.orderId;
+    const orderNumber = order.numero || orderId;
+    const title = 'Nouvelle commande';
+    const body = `Commande #${orderNumber} de ${order.client_nom || 'un client'} à prendre en charge.`;
+
+    try {
+        const db = getFirestore();
+        const admins = await db.collection('users').where('role', '==', 'admin').get();
+
+        await Promise.all(admins.docs.map(async (admin) => {
+            const adminData = admin.data();
+
+            if (adminData.fcm_token) {
+                try {
+                    await getMessaging().send({
+                        token: adminData.fcm_token,
+                        notification: { title, body },
+                        data: { order_id: orderId, type: 'new_order' },
+                    });
+                } catch (pushError) {
+                    console.error(`Erreur push admin ${admin.id} pour la commande ${orderId}:`, pushError);
+                }
+            }
+
+            await admin.ref.collection('notifications').add({
+                titre: title,
+                corps: body,
+                order_id: orderId,
+                type: 'new_order',
+                lu: false,
+                created_at: FieldValue.serverTimestamp(),
+            });
+        }));
+
+        console.log(`Notification de nouvelle commande envoyée à ${admins.size} admin(s): ${orderId}`);
+    } catch (error) {
+        console.error(`Erreur lors de la notification admin pour la commande ${orderId}:`, error);
+    }
+
+    return null;
+});
 
 exports.onOrderUpdate = onDocumentUpdated('orders/{orderId}', async (event) => {
     const orderId = event.params.orderId;

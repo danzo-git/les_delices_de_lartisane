@@ -575,6 +575,14 @@ class _OrderDetailSheetState extends ConsumerState<_OrderDetailSheet> {
                     const SizedBox(height: 12),
                     ...order.items.map((item) => _OrderItemRow(item: item)),
                     const Divider(height: 24),
+                    _SectionHeader(icon: Icons.person_outline, title: 'Contact client'),
+                    const SizedBox(height: 12),
+                    _InfoRow(label: 'Nom', value: order.clientNom),
+                    _InfoRow(
+                      label: 'Téléphone',
+                      value: order.clientTelephone.isNotEmpty ? order.clientTelephone : 'Non renseigné',
+                    ),
+                    const Divider(height: 24),
                     // Résumé financier
                     _SummaryRow(label: 'Sous-total', value: '${currencyFormat.format(order.sousTotal.toInt())} FCFA'),
                     _SummaryRow(label: 'Frais de livraison', value: '${currencyFormat.format(order.fraisLivraison.toInt())} FCFA'),
