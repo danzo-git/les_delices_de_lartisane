@@ -316,6 +316,18 @@ class _OrderDetailSheetState extends ConsumerState<_OrderDetailSheet> {
   bool _isLoading = false;
   final TextEditingController _motifController = TextEditingController();
 
+  String _formatScheduledTime(OrderModel order) {
+    if (order.deliverySlotDate != null) {
+      final date = DateTime.parse('${order.deliverySlotDate}T00:00:00');
+      final dateLabel = DateFormat('EEEE d MMMM yyyy', 'fr_FR').format(date);
+      return order.deliverySlotLabel == null
+          ? dateLabel
+          : '$dateLabel · ${order.deliverySlotLabel}';
+    }
+    return DateFormat('EEEE d MMMM yyyy à HH:mm', 'fr_FR')
+        .format(order.dateSouhaitee!);
+  }
+
   @override
   void dispose() {
     _motifController.dispose();
@@ -608,8 +620,10 @@ class _OrderDetailSheetState extends ConsumerState<_OrderDetailSheet> {
                       _InfoRow(label: 'Adresse précise', value: order.adresseLivraison!),
                     if (order.dateSouhaitee != null)
                       _InfoRow(
-                        label: 'Date/heure souhaitée',
-                        value: DateFormat('EEEE d MMMM yyyy à HH:mm', 'fr_FR').format(order.dateSouhaitee!),
+                        label: order.deliverySlotLabel != null
+                            ? 'Créneau souhaité'
+                            : 'Date/heure souhaitée',
+                        value: _formatScheduledTime(order),
                       ),
 
                     const SizedBox(height: 20),

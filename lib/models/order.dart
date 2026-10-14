@@ -82,6 +82,10 @@ class OrderModel {
   final String statutCommande; // "en_attente_validation" | "acceptee" | "refusee" | "recue" | "en_preparation" | "prete" | "livree"
   final String? motifRefus; // NEW
   final DateTime? dateSouhaitee; // NEW
+  final String? deliverySlotId;
+  final String? deliverySlotDate;
+  final String? deliverySlotLabel;
+  final bool deliverySlotReleased;
   final List<OrderStatusHistory> historiqueStatuts;
   final DateTime? createdAt;
 
@@ -103,6 +107,10 @@ class OrderModel {
     required this.statutCommande,
     this.motifRefus,
     this.dateSouhaitee,
+    this.deliverySlotId,
+    this.deliverySlotDate,
+    this.deliverySlotLabel,
+    this.deliverySlotReleased = false,
     required this.historiqueStatuts,
     this.createdAt,
   });
@@ -131,6 +139,10 @@ class OrderModel {
       dateSouhaitee: map['date_souhaitee'] != null
           ? (map['date_souhaitee'] as Timestamp).toDate()
           : null,
+      deliverySlotId: map['delivery_slot_id'] as String?,
+      deliverySlotDate: map['delivery_slot_date'] as String?,
+      deliverySlotLabel: map['delivery_slot_label'] as String?,
+      deliverySlotReleased: map['delivery_slot_released'] as bool? ?? false,
       historiqueStatuts: (map['historique_statuts'] as List<dynamic>?)
               ?.map((item) => OrderStatusHistory.fromMap(item as Map<String, dynamic>))
               .toList() ??
@@ -159,6 +171,10 @@ class OrderModel {
       'statut_commande': statutCommande,
       if (motifRefus != null) 'motif_refus': motifRefus,
       if (dateSouhaitee != null) 'date_souhaitee': Timestamp.fromDate(dateSouhaitee!),
+      if (deliverySlotId != null) 'delivery_slot_id': deliverySlotId,
+      if (deliverySlotDate != null) 'delivery_slot_date': deliverySlotDate,
+      if (deliverySlotLabel != null) 'delivery_slot_label': deliverySlotLabel,
+      if (deliverySlotId != null) 'delivery_slot_released': deliverySlotReleased,
       'historique_statuts': historiqueStatuts.map((h) => h.toMap()).toList(),
       'created_at': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
     };

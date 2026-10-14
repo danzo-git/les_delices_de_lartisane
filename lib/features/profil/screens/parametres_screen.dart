@@ -125,6 +125,16 @@ class _ParametresScreenState extends ConsumerState<ParametresScreen> {
             },
           ),
           const Divider(),
+          if (userProfile.role == 'admin') ...[
+            ListTile(
+              leading: const Icon(Icons.calendar_month_outlined),
+              title: const Text('Créneaux de préparation'),
+              subtitle: const Text('Horaires, capacité et jours de fermeture'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/admin/creneaux'),
+            ),
+            const Divider(),
+          ],
           ListTile(
             title: const Text('Politique de confidentialité'),
             trailing: const Icon(Icons.chevron_right),

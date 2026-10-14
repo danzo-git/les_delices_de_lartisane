@@ -2,19 +2,19 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../models/delivery_schedule.dart';
 import '../../../models/order.dart';
-import '../../../services/firestore_service.dart';
+import '../../../services/delivery_schedule_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/delivery_provider.dart';
 import '../providers/panier_provider.dart';
-
-final firestoreServiceProvider = Provider((ref) => FirestoreService());
 
 class PanierScreen extends ConsumerStatefulWidget {
   const PanierScreen({super.key});
@@ -25,8 +25,13 @@ class PanierScreen extends ConsumerStatefulWidget {
 
 class _PanierScreenState extends ConsumerState<PanierScreen> {
   final TextEditingController _adresseController = TextEditingController();
+  final DeliveryScheduleService _deliveryScheduleService =
+      DeliveryScheduleService();
 
   DateTime? _dateSouhaitee;
+  AvailableDeliverySlot? _selectedDeliverySlot;
+  bool _scheduleEnabled = false;
+  bool _isLoadingAvailability = false;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -41,6 +46,7 @@ class _PanierScreenState extends ConsumerState<PanierScreen> {
   // ---------------------------------------------------------------------------
 
   Future<void> _selectDateTime(BuildContext context) async {
+    if (_isLoadingAvailability) return;
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now().add(const Duration(days: 1)),
@@ -64,37 +70,106 @@ class _PanierScreenState extends ConsumerState<PanierScreen> {
       return;
     }
 
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: const TimeOfDay(
-        hour: 10,
-        minute: 0,
-      ),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primaire,
+    setState(() {
+      _isLoadingAvailability = true;
+      _dateSouhaitee = null;
+      _selectedDeliverySlot = null;
+      _errorMessage = null;
+    });
+
+    try {
+      final availability =
+          await _deliveryScheduleService.getAvailability(pickedDate);
+      if (!mounted) return;
+
+      if (availability.enabled) {
+        setState(() => _scheduleEnabled = true);
+        if (availability.slots.isEmpty) {
+          setState(() {
+            _errorMessage = 'Aucun créneau disponible à cette date. Choisis un autre jour.';
+          });
+          return;
+        }
+
+        final selectedSlot = await showModalBottomSheet<AvailableDeliverySlot>(
+          context: context,
+          showDragHandle: true,
+          builder: (context) => SafeArea(
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              children: [
+                Text(
+                  'Choisis un créneau',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  DateFormat('EEEE d MMMM yyyy', 'fr_FR').format(
+                    DateTime.utc(pickedDate.year, pickedDate.month, pickedDate.day),
+                  ),
+                  style: const TextStyle(color: AppColors.secondaire),
+                ),
+                const SizedBox(height: 12),
+                for (final slot in availability.slots)
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.schedule, color: AppColors.primaire),
+                      title: Text(slot.timeLabel),
+                      subtitle: Text(
+                        '${slot.remainingCapacity} place${slot.remainingCapacity > 1 ? 's' : ''} restante${slot.remainingCapacity > 1 ? 's' : ''}',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context).pop(slot),
+                    ),
+                  ),
+              ],
             ),
           ),
-          child: child!,
         );
-      },
-    );
+        if (!mounted || selectedSlot == null) return;
+        setState(() {
+          _selectedDeliverySlot = selectedSlot;
+          _dateSouhaitee = selectedSlot.startAt;
+        });
+        return;
+      }
 
-    if (pickedTime == null || !mounted) {
-      return;
+      // Tant que l'artisane n'a pas activé le planning, on conserve le choix
+      // libre déjà utilisé par l'application.
+      setState(() => _scheduleEnabled = false);
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: const TimeOfDay(hour: 10, minute: 0),
+        builder: (context, child) => Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(primary: AppColors.primaire),
+          ),
+          child: child!,
+        ),
+      );
+      if (pickedTime == null || !mounted) return;
+      setState(() {
+        _dateSouhaitee = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+      });
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Impossible de vérifier les disponibilités. Réessaie dans un instant.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingAvailability = false);
     }
 
-    setState(() {
-      _dateSouhaitee = DateTime(
-        pickedDate.year,
-        pickedDate.month,
-        pickedDate.day,
-        pickedTime.hour,
-        pickedTime.minute,
-      );
-    });
   }
 
   // ---------------------------------------------------------------------------
@@ -153,6 +228,12 @@ class _PanierScreenState extends ConsumerState<PanierScreen> {
 
       return;
     }
+    if (_scheduleEnabled && _selectedDeliverySlot == null) {
+      setState(() {
+        _errorMessage = 'Choisis un créneau encore disponible.';
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -160,8 +241,6 @@ class _PanierScreenState extends ConsumerState<PanierScreen> {
     });
 
     try {
-      final firestoreService = ref.read(firestoreServiceProvider);
-
       final docRef =
           FirebaseFirestore.instance.collection('orders').doc();
 
@@ -195,6 +274,9 @@ class _PanierScreenState extends ConsumerState<PanierScreen> {
             ? _adresseController.text.trim()
             : null,
         dateSouhaitee: _dateSouhaitee,
+        deliverySlotId: _selectedDeliverySlot?.id,
+        deliverySlotDate: _selectedDeliverySlot?.dateKey,
+        deliverySlotLabel: _selectedDeliverySlot?.timeLabel,
         fraisLivraison: cartState.fraisLivraison,
         total: cartState.total,
         modePaiement: 'wave',
@@ -209,12 +291,21 @@ class _PanierScreenState extends ConsumerState<PanierScreen> {
         createdAt: DateTime.now(),
       );
 
-      await firestoreService.createOrder(order);
+      final createdOrderId = await _deliveryScheduleService.createOrder(
+        order,
+        slot: _selectedDeliverySlot,
+      );
 
       ref.read(panierProvider.notifier).viderPanier();
 
       if (mounted) {
-        context.go('/order/$orderId');
+        context.go('/order/$createdOrderId');
+      }
+    } on FirebaseFunctionsException catch (error) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = error.message ?? 'Impossible de créer la commande.';
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -503,8 +594,10 @@ class _PanierScreenState extends ConsumerState<PanierScreen> {
                   // DATE ET HEURE
                   // ----------------------------------------------------------------
 
-                  const Text(
-                    'Date et heure souhaitées',
+                  Text(
+                    _scheduleEnabled
+                        ? 'Date et créneau souhaités'
+                        : 'Date et heure souhaitées',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -514,7 +607,9 @@ class _PanierScreenState extends ConsumerState<PanierScreen> {
                   const SizedBox(height: 12),
 
                   InkWell(
-                    onTap: () => _selectDateTime(context),
+                    onTap: _isLoadingAvailability
+                        ? null
+                        : () => _selectDateTime(context),
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
                       padding: const EdgeInsets.all(16),
@@ -531,23 +626,34 @@ class _PanierScreenState extends ConsumerState<PanierScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.calendar_today,
-                            color: AppColors.primaire,
-                          ),
+                          _isLoadingAvailability
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primaire,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.calendar_today,
+                                  color: AppColors.primaire,
+                                ),
 
                           const SizedBox(width: 12),
 
                           Expanded(
                             child: Text(
-                              _dateSouhaitee != null
-                                  ? DateFormat(
+                              _selectedDeliverySlot != null
+                                  ? '${_selectedDeliverySlot!.dateLabel} · ${_selectedDeliverySlot!.timeLabel}'
+                                  : _dateSouhaitee != null
+                                      ? DateFormat(
                                       'EEEE d MMMM yyyy à HH:mm',
                                       'fr_FR',
                                     ).format(
                                       _dateSouhaitee!,
                                     )
-                                  : 'Choisir une date et heure',
+                                      : 'Choisir une date et heure',
                               style: TextStyle(
                                 color:
                                     _dateSouhaitee != null

@@ -21,6 +21,7 @@ import '../features/admin/screens/admin_statistics_screen.dart';
 import '../features/admin/screens/admin_orders_screen.dart';
 import '../features/admin/screens/admin_products_screen.dart';
 import '../features/admin/screens/product_form_screen.dart';
+import '../features/admin/screens/delivery_schedule_admin_screen.dart';
 import '../core/widgets/coming_soon_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../services/notification_service.dart';
@@ -264,6 +265,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         path: '/admin/produit/nouveau',
         builder: (context, state) => const ProductFormScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/admin/creneaux',
+        builder: (context, state) => const DeliveryScheduleAdminScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

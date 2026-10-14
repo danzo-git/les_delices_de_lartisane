@@ -24,6 +24,17 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
 
   Future<void> _processPayment(OrderModel order) async {
     setState(() => _isPaying = true);
+  String _formatScheduledTime(OrderModel order) {
+    if (order.deliverySlotDate != null) {
+      final date = DateTime.parse('${order.deliverySlotDate}T00:00:00');
+      final dateLabel = DateFormat('dd/MM/yyyy', 'fr_FR').format(date);
+      return order.deliverySlotLabel == null
+          ? dateLabel
+          : '$dateLabel · ${order.deliverySlotLabel}';
+    }
+    return DateFormat('dd/MM/yyyy HH:mm').format(order.dateSouhaitee!);
+  }
+
     try {
       final paymentService = ref.read(paymentServiceProvider);
       final checkoutUrl = await paymentService.initierPaiement(order.id);
@@ -376,7 +387,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                 const Icon(Icons.calendar_today, size: 16, color: AppColors.primaire),
                 const SizedBox(width: 8),
                 Text(
-                  'Date souhaitée: ${DateFormat('dd/MM/yyyy HH:mm').format(order.dateSouhaitee!)}',
+                  'Date souhaitée: ${_formatScheduledTime(order)}',
                   style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ],

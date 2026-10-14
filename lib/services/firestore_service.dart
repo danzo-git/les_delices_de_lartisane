@@ -88,14 +88,6 @@ class FirestoreService {
   }
 
   // --- COMMANDES ---
-  Future<void> createOrder(OrderModel order) async {
-    try {
-      await _firestore.collection('orders').doc(order.id).set(order.toMap());
-    } catch (e) {
-      print('Erreur lors de la création de la commande: $e');
-      rethrow;
-    }
-  }
   Future<OrderModel?> getOrder(String orderId) async {
     try {
       final doc = await _firestore.collection('orders').doc(orderId).get();

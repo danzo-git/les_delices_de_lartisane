@@ -65,6 +65,7 @@ orders/{orderId}
   sous_total: number
   mode_livraison: "retrait" | "livraison"
   commune: string (si livraison)
+  adresse_livraison: string (si livraison)
   frais_livraison: number
   total: number
   mode_paiement: "wave" | "orange_money" | "mtn_momo"
@@ -73,6 +74,11 @@ orders/{orderId}
   historique_statuts: [
     { statut: string, date: timestamp }
   ]
+  date_souhaitee: timestamp
+  delivery_slot_id: string (si créneau réservé)
+  delivery_slot_date: string (YYYY-MM-DD, si créneau réservé)
+  delivery_slot_label: string (si créneau réservé)
+  delivery_slot_released: boolean (si créneau réservé)
   created_at: timestamp
 ```
 
@@ -83,6 +89,33 @@ delivery_fees/{communeId}
   frais: number
   actif: boolean
 ```
+
+### Planning et capacité de préparation
+```
+delivery_settings/default
+  enabled: boolean
+  minimum_notice_hours: number
+  maximum_days_ahead: number
+  slots: [
+    {
+      id: string,
+      weekday: number,          // ISO : lundi = 1, dimanche = 7
+      start_minute: number,     // minutes après minuit
+      end_minute: number,
+      capacity: number,         // commandes maximum pour ce créneau
+      active: boolean
+    }
+  ]
+  closed_dates: [string]        // YYYY-MM-DD
+
+delivery_slot_usage/{date}_{slotId}
+  date: string
+  slot_id: string
+  reserved_count: number
+  updated_at: timestamp
+```
+
+Les créneaux sont récurrents chaque semaine. Les capacités comptent les commandes en attente ou acceptées, tous modes confondus. Une commande annulée ou refusée libère sa place. Les compteurs sont réservés aux Cloud Functions ; l'application cliente ne peut pas les modifier.
 
 ### Sous-collection `reviews` (optionnel, v2)
 ```
@@ -99,8 +132,15 @@ products/{productId}/reviews/{reviewId}
 
 - `users` : chaque utilisateur ne lit/écrit que son propre document ; admin lit tout
 - `products`, `categories`, `delivery_fees` : lecture publique, écriture réservée au rôle `admin`
-- `orders` : un client ne lit/écrit que ses propres commandes ; admin lit/écrit tout
+- `orders` : un client lit ses propres commandes et peut annuler une commande en attente ; la création passe par `createOrderWithSlot` pour vérifier les prix et réserver la capacité dans une transaction ; admin lit/écrit tout
+- `delivery_settings` : lecture publique, écriture admin ; `delivery_slot_usage` : accès réservé aux Cloud Functions
 - Toute logique sensible (validation de paiement, calcul de total) passe par **Cloud Functions**, jamais calculée côté client uniquement
+
+### Cloud Functions associées aux commandes
+- `getAvailableDeliverySlots` renvoie les créneaux d'une date après filtrage du délai minimum, des fermetures et des capacités restantes.
+- `createOrderWithSlot` vérifie le panier et la livraison, puis crée la commande et réserve une place atomiquement.
+- `releaseDeliverySlot` libère la place d'une commande annulée ou refusée, avec reprise automatique en cas d'échec.
+- `onOrderCreated` et `onOrderUpdate` continuent de gérer les notifications.
 
 ---
 
@@ -200,5 +240,7 @@ Construire écran par écran, dans cet ordre, en donnant à Antigravity **un éc
 - [ ] Activer Firestore (mode production, règles de sécurité ci-dessus)
 - [ ] Activer Storage (photos produits) — **nécessite le plan Blaze depuis février 2026** : lier une carte bancaire est obligatoire pour créer le bucket, même si l'usage reste gratuit ensuite. Choisir une région US (us-central1, us-west1 ou us-east1) pour bénéficier du tier "Always Free" Google Cloud (5 Go stockés, 100 Go de sortie/mois)
 - [ ] Activer Cloud Functions (nécessite le plan Blaze — reste gratuit tant que l'usage est faible)
+- [ ] Déployer ensemble les Cloud Functions et les règles Firestore après une modification de leur code : `firebase deploy --only functions,firestore:rules`
+- [ ] Dans l'application admin, ouvrir **Paramètres → Créneaux de préparation**, définir les horaires, capacités et fermetures, puis activer et enregistrer le planning. Il reste désactivé tant qu'aucune configuration n'est faite.
 - [ ] Créer un projet Flutter et le connecter à Firebase (`flutterfire configure`)
 - [ ] Créer les documents `categories` et `delivery_fees` de base dans Firestore (données de départ)

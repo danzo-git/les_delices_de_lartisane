@@ -79,6 +79,17 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Planning public (jours et horaires), modifiable uniquement par l'admin.
+    match /delivery_settings/{settingsId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Les compteurs de capacité ne sont consultables et modifiables que par les Cloud Functions.
+    match /delivery_slot_usage/{usageId} {
+      allow read, write: if false;
+    }
+
     // -------------------------------------------------------------------------
     // PRODUCTS
     // -------------------------------------------------------------------------
@@ -105,11 +116,9 @@ service cloud.firestore {
       // Lecture : un client lit ses commandes, un admin lit tout
       allow read: if request.auth != null && (resource.data.user_id == request.auth.uid || isAdmin());
       
-      // Création : client authentifié, avec statut exact imposé
-      allow create: if request.auth != null 
-        && request.resource.data.user_id == request.auth.uid 
-        && request.resource.data.statut_commande == "en_attente_validation" 
-        && request.resource.data.statut_paiement == "non_requis";
+      // Création exclusivement via createOrderWithSlot (Cloud Function Admin SDK).
+      // Cela réserve la capacité dans la même transaction que la commande.
+      allow create: if false;
         
       // Modification : client ne peut pas modifier les champs sensibles
       // SAUF pour annuler une commande en attente
