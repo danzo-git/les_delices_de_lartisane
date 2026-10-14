@@ -139,7 +139,7 @@ products/{productId}/reviews/{reviewId}
 ### Cloud Functions associées aux commandes
 - `getAvailableDeliverySlots` renvoie les créneaux d'une date après filtrage du délai minimum, des fermetures et des capacités restantes.
 - `createOrderWithSlot` vérifie le panier et la livraison, puis crée la commande et réserve une place atomiquement.
-- `releaseDeliverySlot` libère la place d'une commande annulée ou refusée, avec reprise automatique en cas d'échec.
+- `releaseDeliverySlot` libère la place d'une commande annulée ou refusée. Les échecs ne sont pas relancés automatiquement ; une correction manuelle peut être nécessaire.
 - `onOrderCreated` et `onOrderUpdate` continuent de gérer les notifications.
 
 ---

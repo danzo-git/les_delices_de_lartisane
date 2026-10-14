@@ -525,7 +525,7 @@ exports.onOrderCreated = onDocumentCreated('orders/{orderId}', async (event) => 
 });
 
 exports.releaseDeliverySlot = onDocumentUpdated(
-    { document: 'orders/{orderId}', retry: true },
+    { document: 'orders/{orderId}' },
     async (event) => {
         const orderId = event.params.orderId;
         const newData = event.data.after.data();
