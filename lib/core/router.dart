@@ -19,6 +19,7 @@ import '../features/admin/screens/admin_shell.dart';
 import '../features/admin/screens/admin_dashboard_screen.dart';
 import '../features/admin/screens/admin_statistics_screen.dart';
 import '../features/admin/screens/admin_orders_screen.dart';
+import '../features/admin/screens/admin_preparation_screen.dart';
 import '../features/admin/screens/admin_products_screen.dart';
 import '../features/admin/screens/product_form_screen.dart';
 import '../features/admin/screens/delivery_schedule_admin_screen.dart';
@@ -227,6 +228,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/admin/commandes',
                 builder: (context, state) => const AdminOrdersScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'preparation',
+                    builder: (context, state) => const AdminPreparationScreen(),
+                  ),
+                ],
               ),
             ],
           ),

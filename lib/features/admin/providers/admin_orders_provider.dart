@@ -24,3 +24,17 @@ final adminOrdersProvider = StreamProvider<List<OrderModel>>((ref) {
         .toList();
   });
 });
+
+/// Toutes les commandes, indépendamment du filtre de la liste générale.
+/// Le planning de préparation applique ses propres filtres par date et statut.
+final adminPreparationOrdersProvider = StreamProvider<List<OrderModel>>((ref) {
+  return FirebaseFirestore.instance
+      .collection('orders')
+      .orderBy('created_at', descending: true)
+      .snapshots()
+      .map(
+        (snapshot) => snapshot.docs
+            .map((doc) => OrderModel.fromMap(doc.data(), doc.id))
+            .toList(),
+      );
+});

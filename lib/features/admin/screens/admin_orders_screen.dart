@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../models/order.dart';
 import '../../../theme/app_colors.dart';
@@ -58,6 +59,14 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Planning de préparation',
+            onPressed: () => context.push('/admin/commandes/preparation'),
+            icon: const Icon(Icons.today_rounded),
+          ),
+          const SizedBox(width: 8),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(52),
           child: _buildFilterChips(currentFilter),

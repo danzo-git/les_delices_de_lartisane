@@ -118,6 +118,60 @@ class _DashboardContent extends StatelessWidget {
               style: const TextStyle(color: AppColors.secondaire),
             ),
             const SizedBox(height: 22),
+            Card(
+              margin: EdgeInsets.zero,
+              elevation: 0,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: BorderSide(
+                  color: AppColors.primaire.withValues(alpha: 0.14),
+                ),
+              ),
+              child: InkWell(
+                onTap: () => context.go('/admin/commandes/preparation'),
+                borderRadius: BorderRadius.circular(18),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaire.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(
+                          Icons.kitchen_rounded,
+                          color: AppColors.primaire,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Planning de préparation',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 3),
+                            const Text(
+                              'Commandes, créneaux et quantités à préparer',
+                              style: TextStyle(color: AppColors.secondaire),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
             _MetricGrid(
               columns: columns,
               children: [

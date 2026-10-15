@@ -142,6 +142,8 @@ products/{productId}/reviews/{reviewId}
 - `releaseDeliverySlot` libère la place d'une commande annulée ou refusée. Les échecs ne sont pas relancés automatiquement ; une correction manuelle peut être nécessaire.
 - `onOrderCreated` et `onOrderUpdate` continuent de gérer les notifications.
 
+Dans l'espace admin, le **Planning de préparation** regroupe les commandes actives par date et créneau, totalise les quantités par produit et permet de faire avancer les statuts après confirmation du paiement.
+
 ---
 
 ## 3. Architecture Flutter
@@ -192,7 +194,7 @@ lib/
       screens/               # mon compte
       providers/
     admin/
-      screens/               # dashboard, produits, commandes
+      screens/               # dashboard, commandes, préparation, produits
       providers/
   models/
     product.dart
@@ -227,7 +229,7 @@ Construire écran par écran, dans cet ordre, en donnant à Antigravity **un éc
 3. **Vitrine** : Accueil → Catalogue → Fiche produit
 4. **Panier** : Panier → Paiement (mode "confirmation manuelle" au départ, voir cahier des charges §4.2)
 5. **Suivi** : Suivi de commande → Mon compte
-6. **Admin** : Dashboard → Produits → Commandes
+6. **Admin** : Dashboard → Produits → Commandes → Planning de préparation
 
 À chaque étape : donner l'écran Figma correspondant + ce document + le modèle de données, faire générer, tester avant de passer au suivant.
 
