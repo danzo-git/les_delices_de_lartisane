@@ -100,12 +100,8 @@ service cloud.firestore {
       // Sous-collection: REVIEWS
       match /reviews/{reviewId} {
         allow read: if true; // Publique
-        
-        // Création : un client authentifié pour lui-même
-        allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
-        
-        // Modification/suppression : uniquement l'auteur ou un admin
-        allow update, delete: if request.auth != null && (resource.data.user_id == request.auth.uid || isAdmin());
+        // Création et agrégats uniquement via submitVerifiedProductReview.
+        allow write: if false;
       }
     }
 
@@ -130,7 +126,8 @@ service cloud.firestore {
             // Cas 1 : modification normale (ex: instruction de livraison, si applicable)
             !request.resource.data.diff(resource.data).affectedKeys().hasAny([
               'statut_commande', 'statut_paiement', 'motif_refus', 
-              'historique_statuts', 'genius_pay_reference', 'total', 'items'
+              'historique_statuts', 'genius_pay_reference', 'total', 'items',
+              'reviewed_product_ids'
             ])
             ||
             // Cas 2 : Annulation de la commande par le client

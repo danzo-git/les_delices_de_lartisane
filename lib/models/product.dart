@@ -43,6 +43,7 @@ class Product {
   final String allergenes;
   final double noteMoyenne;
   final int nombreAvis;
+  final int noteTotal;
   final List<ProductOption> options;
   final DateTime? createdAt;
 
@@ -57,6 +58,7 @@ class Product {
     required this.allergenes,
     required this.noteMoyenne,
     required this.nombreAvis,
+    required this.noteTotal,
     required this.options,
     this.createdAt,
   });
@@ -77,6 +79,9 @@ class Product {
     } else if (map['nombre_avis'] is String) {
       parsedAvis = int.tryParse(map['nombre_avis'] as String) ?? 0;
     }
+    final parsedTotal = map['note_total'] is num
+        ? (map['note_total'] as num).toInt()
+        : (parsedNote * parsedAvis).round();
 
     // Parsing de disponible (au cas où entré comme string)
     bool parsedDisponible = true;
@@ -97,6 +102,7 @@ class Product {
       allergenes: map['allergenes'] as String? ?? '',
       noteMoyenne: parsedNote,
       nombreAvis: parsedAvis,
+      noteTotal: parsedTotal,
       options: (map['options'] as List<dynamic>?)
               ?.map((item) => ProductOption.fromMap(item as Map<String, dynamic>))
               .toList() ??
@@ -118,6 +124,7 @@ class Product {
       'allergenes': allergenes,
       'note_moyenne': noteMoyenne,
       'nombre_avis': nombreAvis,
+      'note_total': noteTotal,
       'options': options.map((o) => o.toMap()).toList(),
       'created_at': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
     };

@@ -86,6 +86,7 @@ class OrderModel {
   final String? deliverySlotDate;
   final String? deliverySlotLabel;
   final bool deliverySlotReleased;
+  final List<String> reviewedProductIds;
   final List<OrderStatusHistory> historiqueStatuts;
   final DateTime? createdAt;
 
@@ -111,6 +112,7 @@ class OrderModel {
     this.deliverySlotDate,
     this.deliverySlotLabel,
     this.deliverySlotReleased = false,
+    this.reviewedProductIds = const [],
     required this.historiqueStatuts,
     this.createdAt,
   });
@@ -143,6 +145,10 @@ class OrderModel {
       deliverySlotDate: map['delivery_slot_date'] as String?,
       deliverySlotLabel: map['delivery_slot_label'] as String?,
       deliverySlotReleased: map['delivery_slot_released'] as bool? ?? false,
+      reviewedProductIds: (map['reviewed_product_ids'] as List<dynamic>?)
+              ?.whereType<String>()
+              .toList() ??
+          const [],
       historiqueStatuts: (map['historique_statuts'] as List<dynamic>?)
               ?.map((item) => OrderStatusHistory.fromMap(item as Map<String, dynamic>))
               .toList() ??
@@ -175,6 +181,7 @@ class OrderModel {
       if (deliverySlotDate != null) 'delivery_slot_date': deliverySlotDate,
       if (deliverySlotLabel != null) 'delivery_slot_label': deliverySlotLabel,
       if (deliverySlotId != null) 'delivery_slot_released': deliverySlotReleased,
+      'reviewed_product_ids': reviewedProductIds,
       'historique_statuts': historiqueStatuts.map((h) => h.toMap()).toList(),
       'created_at': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
     };

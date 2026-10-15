@@ -454,6 +454,7 @@ exports.createOrderWithSlot = onCall(async (request) => {
             mode_paiement: 'wave',
             statut_paiement: 'non_requis',
             statut_commande: 'en_attente_validation',
+            reviewed_product_ids: [],
             date_souhaitee: Timestamp.fromDate(scheduledAt),
             historique_statuts: [{ statut: 'en_attente_validation', date: Timestamp.now() }],
             created_at: Timestamp.now(),
@@ -478,6 +479,82 @@ exports.createOrderWithSlot = onCall(async (request) => {
     });
 
     return { order_id: orderId, time_zone: DELIVERY_TIME_ZONE };
+});
+
+exports.submitVerifiedProductReview = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Connecte-toi pour laisser un avis.');
+    }
+
+    const { order_id: orderId, product_id: productId } = request.data || {};
+    const rating = Number(request.data?.note);
+    const comment = String(request.data?.commentaire || '').trim();
+    if (typeof orderId !== 'string' || !orderId || typeof productId !== 'string' || !productId) {
+        throw new HttpsError('invalid-argument', 'La commande et le produit sont obligatoires.');
+    }
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        throw new HttpsError('invalid-argument', 'La note doit être comprise entre 1 et 5.');
+    }
+    if (comment.length > 800) {
+        throw new HttpsError('invalid-argument', 'Le commentaire ne peut pas dépasser 800 caractères.');
+    }
+
+    const db = getFirestore();
+    const orderRef = db.collection('orders').doc(orderId);
+    const reviewRef = db.collection('products').doc(productId).collection('reviews').doc();
+    await db.runTransaction(async (transaction) => {
+        const orderSnapshot = await transaction.get(orderRef);
+        if (!orderSnapshot.exists) {
+            throw new HttpsError('not-found', 'Commande introuvable.');
+        }
+
+        const order = orderSnapshot.data();
+        if (order.user_id !== request.auth.uid) {
+            throw new HttpsError('permission-denied', 'Cette commande ne t’appartient pas.');
+        }
+        if (order.statut_commande !== 'livree') {
+            throw new HttpsError('failed-precondition', 'Tu pourras laisser un avis après la livraison.');
+        }
+        if (!(order.items || []).some((item) => item.product_id === productId)) {
+            throw new HttpsError('permission-denied', 'Ce produit ne figure pas dans cette commande.');
+        }
+        if ((order.reviewed_product_ids || []).includes(productId)) {
+            throw new HttpsError('already-exists', 'Tu as déjà évalué ce produit pour cette commande.');
+        }
+
+        const productRef = db.collection('products').doc(productId);
+        const productSnapshot = await transaction.get(productRef);
+        if (!productSnapshot.exists) {
+            throw new HttpsError('not-found', 'Produit introuvable.');
+        }
+
+        const product = productSnapshot.data();
+        const previousCount = Math.max(0, Number(product.nombre_avis) || 0);
+        const previousAverage = Math.max(0, Number(product.note_moyenne) || 0);
+        const previousTotal = Number.isInteger(product.note_total)
+            ? product.note_total
+            : Math.round(previousAverage * previousCount);
+        const nextTotal = previousTotal + rating;
+        const nextCount = previousCount + 1;
+        const nextAverage = Math.round((nextTotal / nextCount) * 10) / 10;
+
+        transaction.create(reviewRef, {
+            note: rating,
+            commentaire: comment,
+            verified_purchase: true,
+            created_at: Timestamp.now(),
+        });
+        transaction.update(orderRef, {
+            reviewed_product_ids: FieldValue.arrayUnion(productId),
+        });
+        transaction.update(productRef, {
+            note_moyenne: nextAverage,
+            nombre_avis: nextCount,
+            note_total: nextTotal,
+        });
+    });
+
+    return { success: true };
 });
 
 exports.onOrderCreated = onDocumentCreated('orders/{orderId}', async (event) => {

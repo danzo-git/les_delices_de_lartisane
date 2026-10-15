@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../providers/order_provider.dart';
 
 class OrderHistoryScreen extends ConsumerWidget {
-  const OrderHistoryScreen({Key? key}) : super(key: key);
+  const OrderHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,6 +43,13 @@ class OrderHistoryScreen extends ConsumerWidget {
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final order = orders[index];
+              final productIds = order.items
+                  .map((item) => item.productId)
+                  .where((id) => id.isNotEmpty)
+                  .toSet();
+              final hasUnreviewedProduct = productIds.any(
+                (id) => !order.reviewedProductIds.contains(id),
+              );
               return InkWell(
                 onTap: () => context.push('/order/${order.id}'),
                 borderRadius: BorderRadius.circular(16),
@@ -53,56 +60,80 @@ class OrderHistoryScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha: 0.02),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Commande #${order.numero}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF2C2C2C),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              order.createdAt != null
-                                  ? DateFormat('dd MMM yyyy', 'fr_FR').format(order.createdAt!)
-                                  : '',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF8E8E93),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            _buildStatusBadge(order.statutCommande),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                      Row(
                         children: [
-                          Text(
-                            '${order.total.toInt()} FCFA',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFE96A92),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Commande #${order.numero}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2C2C2C),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  order.createdAt != null
+                                      ? DateFormat(
+                                          'dd MMM yyyy',
+                                          'fr_FR',
+                                        ).format(order.createdAt!)
+                                      : '',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF8E8E93),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildStatusBadge(order.statutCommande),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          const Icon(Icons.chevron_right, color: Color(0xFF8E8E93)),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${order.total.toInt()} FCFA',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFE96A92),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Icon(
+                                Icons.chevron_right,
+                                color: Color(0xFF8E8E93),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
+                      if (order.statutCommande == 'livree')
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: () =>
+                                context.push('/order/${order.id}/avis'),
+                            icon: const Icon(Icons.rate_review_outlined),
+                            label: Text(
+                              hasUnreviewedProduct
+                                  ? 'Donner mon avis'
+                                  : 'Avis envoyés',
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -110,7 +141,9 @@ class OrderHistoryScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFE96A92))),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: Color(0xFFE96A92)),
+        ),
         error: (err, stack) => Center(child: Text('Erreur: $err')),
       ),
     );
@@ -154,7 +187,9 @@ class OrderHistoryScreen extends ConsumerWidget {
         label = status == 'annulee' ? 'Annulée' : 'Refusée';
         break;
       case 'livree':
-        bgColor = const Color(0xFFE8F5E9); // Match "Succès" color from design system if different
+        bgColor = const Color(
+          0xFFE8F5E9,
+        ); // Match "Succès" color from design system if different
         textColor = const Color(0xFF3C8371);
         label = 'Livrée';
         break;

@@ -157,6 +157,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         allergenes: _allergenesController.text.trim(),
         noteMoyenne: 0.0, // Initialisation
         nombreAvis: 0,
+        noteTotal: 0,
         options: _options,
         createdAt: isEditing ? null : DateTime.now(), // Ignoré à l'update si on utilise toMap partiel
       );

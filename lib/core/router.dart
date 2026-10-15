@@ -11,10 +11,12 @@ import '../features/main/screens/main_screen.dart';
 import '../features/catalogue/screens/home_screen.dart';
 import '../features/catalogue/screens/catalogue_screen.dart';
 import '../features/catalogue/screens/product_detail_screen.dart';
+import '../features/catalogue/screens/product_reviews_screen.dart';
 import '../features/profil/screens/profile_screen.dart';
 import '../features/panier/screens/panier_screen.dart';
 import '../features/commande/screens/order_history_screen.dart';
 import '../features/commande/screens/order_tracking_screen.dart';
+import '../features/commande/screens/order_review_screen.dart';
 import '../features/admin/screens/admin_shell.dart';
 import '../features/admin/screens/admin_dashboard_screen.dart';
 import '../features/admin/screens/admin_statistics_screen.dart';
@@ -39,19 +41,41 @@ final _initNotificationRouter = () {
   return true;
 }();
 
-final _shellNavigatorAccueilKey = GlobalKey<NavigatorState>(debugLabel: 'accueil');
-final _shellNavigatorCatalogueKey = GlobalKey<NavigatorState>(debugLabel: 'catalogue');
-final _shellNavigatorPanierKey = GlobalKey<NavigatorState>(debugLabel: 'panier');
-final _shellNavigatorCommandesKey = GlobalKey<NavigatorState>(debugLabel: 'commandes');
-final _shellNavigatorCompteKey = GlobalKey<NavigatorState>(debugLabel: 'compte');
+final _shellNavigatorAccueilKey = GlobalKey<NavigatorState>(
+  debugLabel: 'accueil',
+);
+final _shellNavigatorCatalogueKey = GlobalKey<NavigatorState>(
+  debugLabel: 'catalogue',
+);
+final _shellNavigatorPanierKey = GlobalKey<NavigatorState>(
+  debugLabel: 'panier',
+);
+final _shellNavigatorCommandesKey = GlobalKey<NavigatorState>(
+  debugLabel: 'commandes',
+);
+final _shellNavigatorCompteKey = GlobalKey<NavigatorState>(
+  debugLabel: 'compte',
+);
 // final _shellNavigatorParametresKey = GlobalKey<NavigatorState>(debugLabel: 'parametres');
 final _shellNavigatorFaqKey = GlobalKey<NavigatorState>(debugLabel: 'faq');
-final _shellNavigatorParametresKey = GlobalKey<NavigatorState>(debugLabel: 'parametres');
-final _adminNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'admin-dashboard');
-final _adminNavigatorCommandesKey = GlobalKey<NavigatorState>(debugLabel: 'admin-commandes');
-final _adminNavigatorProduitsKey = GlobalKey<NavigatorState>(debugLabel: 'admin-produits');
-final _adminNavigatorStatsKey = GlobalKey<NavigatorState>(debugLabel: 'admin-stats');
-final _adminNavigatorParamsKey = GlobalKey<NavigatorState>(debugLabel: 'admin-params');
+final _shellNavigatorParametresKey = GlobalKey<NavigatorState>(
+  debugLabel: 'parametres',
+);
+final _adminNavigatorDashboardKey = GlobalKey<NavigatorState>(
+  debugLabel: 'admin-dashboard',
+);
+final _adminNavigatorCommandesKey = GlobalKey<NavigatorState>(
+  debugLabel: 'admin-commandes',
+);
+final _adminNavigatorProduitsKey = GlobalKey<NavigatorState>(
+  debugLabel: 'admin-produits',
+);
+final _adminNavigatorStatsKey = GlobalKey<NavigatorState>(
+  debugLabel: 'admin-stats',
+);
+final _adminNavigatorParamsKey = GlobalKey<NavigatorState>(
+  debugLabel: 'admin-params',
+);
 
 /// Listenable qui notifie GoRouter à chaque changement d'état d'auth
 class _AuthStateListenable extends ChangeNotifier {
@@ -90,10 +114,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
@@ -162,6 +183,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           final productId = state.pathParameters['id']!;
           return ProductDetailScreen(productId: productId);
         },
+        routes: [
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'avis',
+            builder: (context, state) =>
+                ProductReviewsScreen(productId: state.pathParameters['id']!),
+          ),
+        ],
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
@@ -175,6 +204,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           final orderId = state.pathParameters['id']!;
           return OrderTrackingScreen(orderId: orderId);
         },
+        routes: [
+          GoRoute(
+            parentNavigatorKey: _rootNavigatorKey,
+            path: 'avis',
+            builder: (context, state) =>
+                OrderReviewScreen(orderId: state.pathParameters['id']!),
+          ),
+        ],
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

@@ -136,17 +136,22 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                       ),
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${product.noteMoyenne} (${product.nombreAvis})',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                  ),
-                                ],
+                              InkWell(
+                                onTap: () => context.push('/product/${product.id}/avis'),
+                                borderRadius: BorderRadius.circular(8),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${product.noteMoyenne} (${product.nombreAvis})',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    const Icon(Icons.chevron_right, size: 18),
+                                  ],
+                                ),
                               ),
                             ],
                           ),

@@ -39,6 +39,7 @@ products/{productId}
   allergenes: string
   note_moyenne: number       // ex : 4.8
   nombre_avis: number
+  note_total: number         // somme entière des notes, agrégat interne
   options: [                 // ex : Boîte de 6 / 12 / 24
     { label: string, prix: number }
   ]
@@ -79,6 +80,7 @@ orders/{orderId}
   delivery_slot_date: string (YYYY-MM-DD, si créneau réservé)
   delivery_slot_label: string (si créneau réservé)
   delivery_slot_released: boolean (si créneau réservé)
+  reviewed_product_ids: [string] // produits déjà évalués dans cette commande
   created_at: timestamp
 ```
 
@@ -117,14 +119,15 @@ delivery_slot_usage/{date}_{slotId}
 
 Les créneaux sont récurrents chaque semaine. Les capacités comptent les commandes en attente ou acceptées, tous modes confondus. Une commande annulée ou refusée libère sa place. Les compteurs sont réservés aux Cloud Functions ; l'application cliente ne peut pas les modifier.
 
-### Sous-collection `reviews` (optionnel, v2)
+### Sous-collection `reviews`
 ```
 products/{productId}/reviews/{reviewId}
-  user_id: string
   note: number
   commentaire: string
+  verified_purchase: boolean
   created_at: timestamp
 ```
+Les avis sont publics, sans identifiant client ni numéro de commande. Une Cloud Function vérifie que l'auteur est le propriétaire d'une commande livrée contenant le produit, empêche un second avis pour ce produit et met à jour la note moyenne. Les clients ne peuvent pas écrire directement dans les avis ou modifier `reviewed_product_ids`.
 
 ---
 
@@ -141,6 +144,7 @@ products/{productId}/reviews/{reviewId}
 - `createOrderWithSlot` vérifie le panier et la livraison, puis crée la commande et réserve une place atomiquement.
 - `releaseDeliverySlot` libère la place d'une commande annulée ou refusée. Les échecs ne sont pas relancés automatiquement ; une correction manuelle peut être nécessaire.
 - `reconcileDeliverySlotUsage` est réservée aux admins et recalcule les compteurs d'une date depuis les commandes actives. Elle sert à réparer un échec de libération sans relancer automatiquement les événements.
+- `submitVerifiedProductReview` vérifie une commande livrée, enregistre un avis par produit et actualise ses agrégats de note dans une transaction.
 - `onOrderCreated` et `onOrderUpdate` continuent de gérer les notifications.
 
 Dans l'espace admin, le **Planning de préparation** regroupe les commandes actives par date et créneau, totalise les quantités par produit et permet de faire avancer les statuts après confirmation du paiement.
