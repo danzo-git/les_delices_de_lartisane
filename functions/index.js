@@ -563,6 +563,97 @@ exports.releaseDeliverySlot = onDocumentUpdated(
     },
 );
 
+exports.reconcileDeliverySlotUsage = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Connecte-toi pour vérifier les créneaux.');
+    }
+
+    const db = getFirestore();
+    const profile = await db.collection('users').doc(request.auth.uid).get();
+    if (!profile.exists || profile.data().role !== 'admin') {
+        throw new HttpsError('permission-denied', 'Cette opération est réservée à l’administration.');
+    }
+
+    const dateKey = request.data?.date;
+    const parsedDate = parseDeliveryDateKey(dateKey);
+    if (!parsedDate) {
+        throw new HttpsError('invalid-argument', 'Date de créneau invalide.');
+    }
+
+    const ordersQuery = db.collection('orders').where('delivery_slot_date', '==', dateKey);
+    const usageQuery = db.collection('delivery_slot_usage').where('date', '==', dateKey);
+    const settingsRef = db.doc(DELIVERY_SETTINGS_PATH);
+    const result = await db.runTransaction(async (transaction) => {
+        const [ordersSnapshot, usageSnapshot, settingsSnapshot] = await Promise.all([
+            transaction.get(ordersQuery),
+            transaction.get(usageQuery),
+            transaction.get(settingsRef),
+        ]);
+
+        const counts = new Map();
+        const existingUsage = new Map();
+        for (const usageDoc of usageSnapshot.docs) {
+            const slotId = usageDoc.data().slot_id;
+            if (typeof slotId !== 'string' || !slotId) continue;
+            existingUsage.set(slotId, usageDoc);
+            counts.set(slotId, 0);
+        }
+
+        const settings = settingsSnapshot.exists ? settingsSnapshot.data() : {};
+        const weekday = parsedDate.date.getUTCDay() || 7;
+        for (const slot of settings.slots || []) {
+            if (slot.active !== false && Number(slot.weekday) === weekday && slot.id) {
+                counts.set(String(slot.id), 0);
+            }
+        }
+
+        for (const orderDoc of ordersSnapshot.docs) {
+            const order = orderDoc.data();
+            if (['annulee', 'refusee'].includes(order.statut_commande)) continue;
+            if (typeof order.delivery_slot_id !== 'string' || !order.delivery_slot_id) continue;
+            const slotId = order.delivery_slot_id;
+            counts.set(slotId, (counts.get(slotId) || 0) + 1);
+        }
+
+        if (counts.size > 450) {
+            throw new HttpsError('resource-exhausted', 'Trop de créneaux à vérifier pour une seule opération.');
+        }
+
+        let changedSlots = 0;
+        let previousReservations = 0;
+        let correctedReservations = 0;
+        for (const [slotId, reservationCount] of counts) {
+            const usageDoc = existingUsage.get(slotId);
+            const previousCount = usageDoc?.exists
+                ? Math.max(0, Number(usageDoc.data().reserved_count) || 0)
+                : 0;
+            previousReservations += previousCount;
+            correctedReservations += reservationCount;
+            if (previousCount !== reservationCount) changedSlots += 1;
+
+            const usageRef = db.collection('delivery_slot_usage')
+                .doc(deliveryUsageId(dateKey, slotId));
+            if (reservationCount > 0 || usageDoc) {
+                transaction.set(usageRef, {
+                    date: dateKey,
+                    slot_id: slotId,
+                    reserved_count: reservationCount,
+                    updated_at: FieldValue.serverTimestamp(),
+                }, { merge: true });
+            }
+        }
+
+        return {
+            checked_slots: counts.size,
+            changed_slots: changedSlots,
+            previous_reservations: previousReservations,
+            corrected_reservations: correctedReservations,
+        };
+    });
+
+    return { date: dateKey, ...result };
+});
+
 exports.onOrderUpdate = onDocumentUpdated('orders/{orderId}', async (event) => {
     const orderId = event.params.orderId;
     const oldData = event.data.before.data();

@@ -140,6 +140,7 @@ products/{productId}/reviews/{reviewId}
 - `getAvailableDeliverySlots` renvoie les créneaux d'une date après filtrage du délai minimum, des fermetures et des capacités restantes.
 - `createOrderWithSlot` vérifie le panier et la livraison, puis crée la commande et réserve une place atomiquement.
 - `releaseDeliverySlot` libère la place d'une commande annulée ou refusée. Les échecs ne sont pas relancés automatiquement ; une correction manuelle peut être nécessaire.
+- `reconcileDeliverySlotUsage` est réservée aux admins et recalcule les compteurs d'une date depuis les commandes actives. Elle sert à réparer un échec de libération sans relancer automatiquement les événements.
 - `onOrderCreated` et `onOrderUpdate` continuent de gérer les notifications.
 
 Dans l'espace admin, le **Planning de préparation** regroupe les commandes actives par date et créneau, totalise les quantités par produit et permet de faire avancer les statuts après confirmation du paiement.

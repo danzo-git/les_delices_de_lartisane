@@ -32,6 +32,14 @@ class DeliveryScheduleService {
     });
   }
 
+  Future<DeliverySlotReconciliationResult> reconcileUsage(DateTime date) async {
+    final callable = _functions.httpsCallable('reconcileDeliverySlotUsage');
+    final response = await callable.call({'date': deliveryDateKey(date)});
+    return DeliverySlotReconciliationResult.fromMap(
+      Map<String, dynamic>.from(response.data as Map),
+    );
+  }
+
   Future<DeliveryAvailability> getAvailability(DateTime date) async {
     final settings = await getSettings();
     if (!settings.enabled) {

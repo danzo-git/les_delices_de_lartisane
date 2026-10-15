@@ -128,5 +128,32 @@ class DeliveryAvailability {
   final List<AvailableDeliverySlot> slots;
 }
 
+class DeliverySlotReconciliationResult {
+  const DeliverySlotReconciliationResult({
+    required this.dateKey,
+    required this.checkedSlots,
+    required this.changedSlots,
+    required this.previousReservations,
+    required this.correctedReservations,
+  });
+
+  final String dateKey;
+  final int checkedSlots;
+  final int changedSlots;
+  final int previousReservations;
+  final int correctedReservations;
+
+  factory DeliverySlotReconciliationResult.fromMap(Map<String, dynamic> map) =>
+      DeliverySlotReconciliationResult(
+        dateKey: map['date'] as String? ?? '',
+        checkedSlots: (map['checked_slots'] as num?)?.toInt() ?? 0,
+        changedSlots: (map['changed_slots'] as num?)?.toInt() ?? 0,
+        previousReservations:
+            (map['previous_reservations'] as num?)?.toInt() ?? 0,
+        correctedReservations:
+            (map['corrected_reservations'] as num?)?.toInt() ?? 0,
+      );
+}
+
 String deliveryDateKey(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';

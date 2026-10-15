@@ -20,6 +20,7 @@ class _DeliveryScheduleAdminScreenState
   DeliveryScheduleSettings _settings = const DeliveryScheduleSettings();
   bool _loading = true;
   bool _saving = false;
+  bool _reconciling = false;
   String? _loadError;
 
   static const _weekdays = <int, String>{
@@ -76,13 +77,17 @@ class _DeliveryScheduleAdminScreenState
       _showMessage('Ajoute au moins un créneau avant d’activer le planning.');
       return;
     }
-    for (var firstIndex = 0;
-        firstIndex < _settings.slots.length;
-        firstIndex++) {
+    for (
+      var firstIndex = 0;
+      firstIndex < _settings.slots.length;
+      firstIndex++
+    ) {
       final first = _settings.slots[firstIndex];
-      for (var secondIndex = firstIndex + 1;
-          secondIndex < _settings.slots.length;
-          secondIndex++) {
+      for (
+        var secondIndex = firstIndex + 1;
+        secondIndex < _settings.slots.length;
+        secondIndex++
+      ) {
         final second = _settings.slots[secondIndex];
         if (first.weekday == second.weekday &&
             first.startMinute < second.endMinute &&
@@ -159,6 +164,56 @@ class _DeliveryScheduleAdminScreenState
     });
   }
 
+  Future<void> _reconcileUsage() async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final date = await showDatePicker(
+      context: context,
+      initialDate: today,
+      firstDate: today.subtract(const Duration(days: 365)),
+      lastDate: today.add(const Duration(days: 365)),
+      helpText: 'Choisir la date à vérifier',
+      cancelText: 'Annuler',
+      confirmText: 'Continuer',
+    );
+    if (date == null || !mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Vérifier les réservations ?'),
+        content: Text(
+          'Les places du ${DateFormat('d MMMM yyyy', 'fr_FR').format(date)} seront recalculées à partir des commandes. Les commandes annulées ou refusées ne seront pas comptées.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Vérifier'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _reconciling = true);
+    try {
+      final result = await _service.reconcileUsage(date);
+      final changedLabel = result.changedSlots == 0
+          ? 'Aucun compteur à corriger'
+          : '${result.changedSlots} compteur${result.changedSlots > 1 ? 's' : ''} corrigé${result.changedSlots > 1 ? 's' : ''}';
+      _showMessage(
+        '$changedLabel. ${result.correctedReservations} réservation${result.correctedReservations > 1 ? 's' : ''} comptée${result.correctedReservations > 1 ? 's' : ''} sur ${result.checkedSlots} créneau${result.checkedSlots > 1 ? 'x' : ''}.',
+      );
+    } catch (error) {
+      _showMessage('Impossible de vérifier les créneaux : $error');
+    } finally {
+      if (mounted) setState(() => _reconciling = false);
+    }
+  }
+
   List<WeeklyDeliverySlot> _sortSlots(List<WeeklyDeliverySlot> slots) {
     slots.sort((a, b) {
       final dayOrder = a.weekday.compareTo(b.weekday);
@@ -211,7 +266,7 @@ class _DeliveryScheduleAdminScreenState
                 Card(
                   child: SwitchListTile.adaptive(
                     value: _settings.enabled,
-                    activeColor: AppColors.primaire,
+                    activeThumbColor: AppColors.primaire,
                     title: const Text('Activer les créneaux disponibles'),
                     subtitle: Text(
                       _settings.enabled
@@ -406,6 +461,44 @@ class _DeliveryScheduleAdminScreenState
                   ),
                 ),
                 const SizedBox(height: 20),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Vérifier les réservations',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Recalcule les places d’une date à partir des commandes pour réparer une annulation qui n’aurait pas libéré sa place.',
+                          style: TextStyle(color: AppColors.secondaire),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: _reconciling ? null : _reconcileUsage,
+                          icon: _reconciling
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.rule_folder_outlined),
+                          label: Text(
+                            _reconciling
+                                ? 'Vérification…'
+                                : 'Vérifier une date',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: _saving ? null : _saveSettings,
                   icon: _saving
@@ -533,7 +626,7 @@ class _DeliverySlotDialogState extends State<_DeliverySlotDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DropdownButtonFormField<int>(
-              value: _weekday,
+              initialValue: _weekday,
               decoration: const InputDecoration(labelText: 'Jour'),
               items: widget.weekdays.entries
                   .map(
