@@ -128,8 +128,10 @@ class OrderHistoryScreen extends ConsumerWidget {
                       if (order.items.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                          child: Wrap(
+                            alignment: WrapAlignment.end,
+                            spacing: 8,
+                            runSpacing: 4,
                             children: [
                               if (order.statutCommande == 'livree') ...[
                                 TextButton.icon(
@@ -142,7 +144,6 @@ class OrderHistoryScreen extends ConsumerWidget {
                                         : 'Avis envoyés',
                                   ),
                                 ),
-                                const SizedBox(width: 8),
                               ],
                               _OrderReorderButton(order: order),
                             ],
