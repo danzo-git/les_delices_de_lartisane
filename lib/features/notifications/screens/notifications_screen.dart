@@ -76,7 +76,7 @@ class NotificationsScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: notifications.length,
-            separatorBuilder: (_, __) =>
+            separatorBuilder: (_, _) =>
                 const Divider(height: 1, indent: 72),
             itemBuilder: (context, index) {
               final notif = notifications[index];
@@ -90,7 +90,10 @@ class NotificationsScreen extends ConsumerWidget {
                   }
                   // Naviguer vers la commande si order_id présent
                   if (notif.orderId != null && context.mounted) {
-                    context.push('/order/${notif.orderId}');
+                    final path = notif.type == 'order_delivered_review'
+                        ? '/order/${notif.orderId}/avis'
+                        : '/order/${notif.orderId}';
+                    context.push(path);
                   }
                 },
               );

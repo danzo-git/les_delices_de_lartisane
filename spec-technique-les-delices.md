@@ -145,7 +145,7 @@ Les avis sont publics, sans identifiant client ni numéro de commande. Une Cloud
 - `releaseDeliverySlot` libère la place d'une commande annulée ou refusée. Les échecs ne sont pas relancés automatiquement ; une correction manuelle peut être nécessaire.
 - `reconcileDeliverySlotUsage` est réservée aux admins et recalcule les compteurs d'une date depuis les commandes actives. Elle sert à réparer un échec de libération sans relancer automatiquement les événements.
 - `submitVerifiedProductReview` vérifie une commande livrée, enregistre un avis par produit et actualise ses agrégats de note dans une transaction.
-- `onOrderCreated` et `onOrderUpdate` continuent de gérer les notifications.
+- `onOrderCreated` et `onOrderUpdate` continuent de gérer les notifications ; une commande livrée propose un accès direct à la saisie d'avis.
 
 Dans l'espace admin, le **Planning de préparation** regroupe les commandes actives par date et créneau, totalise les quantités par produit et permet de faire avancer les statuts après confirmation du paiement.
 

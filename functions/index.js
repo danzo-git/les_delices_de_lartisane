@@ -791,7 +791,7 @@ exports.onOrderUpdate = onDocumentUpdated('orders/{orderId}', async (event) => {
                 break;
             case 'livree':
                 title = 'Commande livrée';
-                body = `Votre commande #${orderNumber} a été livrée. Merci de votre confiance !`;
+                body = `Votre commande #${orderNumber} a été livrée. Votre avis nous ferait plaisir !`;
                 break;
         }
 
@@ -804,7 +804,9 @@ exports.onOrderUpdate = onDocumentUpdated('orders/{orderId}', async (event) => {
                 },
                 data: {
                     order_id: orderId,
-                    type: 'order_status_update'
+                    type: newStatus === 'livree'
+                        ? 'order_delivered_review'
+                        : 'order_status_update'
                 }
             };
 
@@ -820,7 +822,9 @@ exports.onOrderUpdate = onDocumentUpdated('orders/{orderId}', async (event) => {
                 titre: title,
                 corps: body,
                 order_id: orderId,
-                type: 'order_status_update',
+                type: newStatus === 'livree'
+                    ? 'order_delivered_review'
+                    : 'order_status_update',
                 lu: false,
                 created_at: FieldValue.serverTimestamp(), // Timestamp Firestore natif (compatible SDK Dart)
             });

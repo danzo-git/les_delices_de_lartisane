@@ -105,7 +105,10 @@ class NotificationService {
     if (initialMessage != null) {
       debugPrint('App opened from cold start via notification');
       if (initialMessage.data.containsKey('order_id')) {
-        pendingRoute = '/order/${initialMessage.data['order_id']}';
+        pendingRoute = _orderRoute(
+          initialMessage.data['order_id'],
+          initialMessage.data['type'],
+        );
       }
     }
   }
@@ -113,7 +116,10 @@ class NotificationService {
   void _handleMessageAction(RemoteMessage message) {
     if (message.data.containsKey('order_id')) {
       final orderId = message.data['order_id'];
-      _navigateToOrder(orderId);
+      _navigateToOrder(
+        orderId,
+        openReview: message.data['type'] == 'order_delivered_review',
+      );
     }
   }
 
@@ -121,21 +127,32 @@ class NotificationService {
     try {
       final data = jsonDecode(payload);
       if (data['order_id'] != null) {
-        _navigateToOrder(data['order_id']);
+        _navigateToOrder(
+          data['order_id'],
+          openReview: data['type'] == 'order_delivered_review',
+        );
       }
     } catch (e) {
       debugPrint("Erreur décodage payload: $e");
     }
   }
 
-  void _navigateToOrder(String orderId) {
+  String _orderRoute(String orderId, String? type) =>
+      type == 'order_delivered_review'
+      ? '/order/$orderId/avis'
+      : '/order/$orderId';
+
+  void _navigateToOrder(String orderId, {bool openReview = false}) {
+    final route = openReview
+        ? _orderRoute(orderId, 'order_delivered_review')
+        : _orderRoute(orderId, null);
     if (_navigatorKey != null && _navigatorKey!.currentContext != null) {
-      _navigatorKey!.currentContext!.go('/order/$orderId');
+      _navigatorKey!.currentContext!.go(route);
     } else {
       debugPrint("NavigatorKey is null or context is null, retrying in 1s...");
       Future.delayed(const Duration(seconds: 1), () {
         if (_navigatorKey != null && _navigatorKey!.currentContext != null) {
-          _navigatorKey!.currentContext!.go('/order/$orderId');
+          _navigatorKey!.currentContext!.go(route);
         }
       });
     }
