@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../models/cart_item.dart';
+import '../../../models/order.dart';
+import '../../../models/product.dart';
+import '../../../services/firestore_service.dart';
+import '../../panier/providers/panier_provider.dart';
 import '../providers/order_provider.dart';
 
 class OrderHistoryScreen extends ConsumerWidget {
@@ -120,18 +125,27 @@ class OrderHistoryScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      if (order.statutCommande == 'livree')
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton.icon(
-                            onPressed: () =>
-                                context.push('/order/${order.id}/avis'),
-                            icon: const Icon(Icons.rate_review_outlined),
-                            label: Text(
-                              hasUnreviewedProduct
-                                  ? 'Donner mon avis'
-                                  : 'Avis envoyés',
-                            ),
+                      if (order.items.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (order.statutCommande == 'livree') ...[
+                                TextButton.icon(
+                                  onPressed: () =>
+                                      context.push('/order/${order.id}/avis'),
+                                  icon: const Icon(Icons.rate_review_outlined),
+                                  label: Text(
+                                    hasUnreviewedProduct
+                                        ? 'Donner mon avis'
+                                        : 'Avis envoyés',
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              _OrderReorderButton(order: order),
+                            ],
                           ),
                         ),
                     ],
@@ -213,6 +227,106 @@ class OrderHistoryScreen extends ConsumerWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
+    );
+  }
+}
+
+class _OrderReorderButton extends ConsumerStatefulWidget {
+  const _OrderReorderButton({required this.order});
+
+  final OrderModel order;
+
+  @override
+  ConsumerState<_OrderReorderButton> createState() =>
+      _OrderReorderButtonState();
+}
+
+class _OrderReorderButtonState extends ConsumerState<_OrderReorderButton> {
+  bool _isLoading = false;
+
+  Future<void> _reorder() async {
+    setState(() => _isLoading = true);
+    try {
+      final productIds = widget.order.items
+          .map((item) => item.productId)
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+      final service = FirestoreService();
+      final currentProducts = await Future.wait(
+        productIds.map(service.getProduct),
+      );
+      final productsById = Map<String, Product?>.fromIterables(
+        productIds,
+        currentProducts,
+      );
+
+      var addedCount = 0;
+      var skippedCount = 0;
+      final cart = ref.read(panierProvider.notifier);
+      for (final item in widget.order.items) {
+        final product = productsById[item.productId];
+        if (product == null || !product.disponible) {
+          skippedCount++;
+          continue;
+        }
+        final matchingOptions = product.options.where(
+          (option) => option.label == item.optionLabel,
+        );
+        if (matchingOptions.isEmpty) {
+          skippedCount++;
+          continue;
+        }
+
+        final option = matchingOptions.first;
+        cart.ajouterArticle(
+          CartItem(
+            productId: product.id,
+            nom: product.nom,
+            optionLabel: option.label,
+            prixUnitaire: option.prix,
+            quantite: item.quantite,
+            sousTotal: option.prix * item.quantite,
+            imageUrl: product.imageUrl,
+          ),
+        );
+        addedCount++;
+      }
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      final message = addedCount == 0
+          ? 'Aucun produit de cette commande n’est disponible actuellement.'
+          : skippedCount == 0
+          ? 'Panier mis à jour avec les prix actuels.'
+          : 'Panier mis à jour. $skippedCount produit(s) indisponible(s) ou option(s) modifiée(s) ignoré(s).';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+      if (addedCount > 0) context.go('/panier');
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Impossible de recommander cette commande.'),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: _isLoading ? null : _reorder,
+      icon: _isLoading
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.replay_rounded),
+      label: const Text('Recommander'),
     );
   }
 }

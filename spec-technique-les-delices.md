@@ -149,6 +149,8 @@ Les avis sont publics, sans identifiant client ni numéro de commande. Une Cloud
 
 Dans l'espace admin, le **Planning de préparation** regroupe les commandes actives par date et créneau, totalise les quantités par produit et permet de faire avancer les statuts après confirmation du paiement.
 
+Dans l'historique des commandes, **Recommander** recharge les produits encore disponibles et les options toujours proposées, au prix actuel. Les références ou options supprimées sont ignorées et signalées au client.
+
 ---
 
 ## 3. Architecture Flutter
